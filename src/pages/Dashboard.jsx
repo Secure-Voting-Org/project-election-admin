@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck } from 'lucide-react';
+import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield } from 'lucide-react';
 
 import ConstituencyManager from '../components/ConstituencyManager';
 import CandidateMaster from '../components/CandidateMaster';
 import VoterRegistration from '../components/VoterRegistration';
 import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
+import RecoveryManager from '../components/RecoveryManager';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -74,6 +75,9 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'lifecycle' ? 'active' : ''}`} onClick={() => setActiveTab('lifecycle')}>
                                 <PlayCircle size={20} /> Election Lifecycle
                             </div>
+                            <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
+                                <Shield size={20} /> Account Recovery
+                            </div>
                         </>
                     )}
 
@@ -113,6 +117,7 @@ const Dashboard = () => {
                     {activeTab === 'lifecycle' && <LifecycleController />}
                     {activeTab === 'verification' && <VoterVerification />}
                     {activeTab === 'registration' && <VoterRegistration />}
+                    {activeTab === 'recovery' && <RecoveryManager admin={admin} />}
 
                     {activeTab === 'reports' && <div className="card"> Report Generation Module Coming Soon </div>}
                 </div>

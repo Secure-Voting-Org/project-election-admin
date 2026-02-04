@@ -66,7 +66,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:8081/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -138,7 +138,7 @@ const VoterRegistration = () => {
         setLoading(true);
         try {
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:5000/api/voter/register`, {
+            const res = await fetch(`http://${window.location.hostname}:8081/api/voter/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
