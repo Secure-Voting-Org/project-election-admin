@@ -8,6 +8,7 @@ import VoterRegistration from '../components/VoterRegistration';
 import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
 import RecoveryManager from '../components/RecoveryManager';
+import AuditLogViewer from '../components/AuditLogViewer';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -78,6 +79,9 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
                             </div>
+                            <div className={`nav-item ${activeTab === 'auditlogs' ? 'active' : ''}`} onClick={() => setActiveTab('auditlogs')}>
+                                <Shield size={20} /> Audit Logs
+                            </div>
                         </>
                     )}
 
@@ -118,6 +122,7 @@ const Dashboard = () => {
                     {activeTab === 'verification' && <VoterVerification />}
                     {activeTab === 'registration' && <VoterRegistration />}
                     {activeTab === 'recovery' && <RecoveryManager admin={admin} />}
+                    {activeTab === 'auditlogs' && <AuditLogViewer />}
 
                     {activeTab === 'reports' && <div className="card"> Report Generation Module Coming Soon </div>}
                 </div>
