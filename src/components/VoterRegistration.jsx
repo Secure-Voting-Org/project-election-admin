@@ -66,7 +66,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -86,6 +86,7 @@ const VoterRegistration = () => {
             console.log("FaceAPI Models Loaded");
         } catch (err) {
             console.error("Failed to load FaceAPI models", err);
+            alert(`Failed to load Face AI Models: ${err.message}. Check console.`);
         }
     };
 
@@ -95,7 +96,10 @@ const VoterRegistration = () => {
                 videoRef.current.srcObject = stream;
                 setCameraActive(true);
             })
-            .catch(err => console.error("Camera Error:", err));
+            .catch(err => {
+                console.error("Camera Error:", err);
+                alert(`Camera Error: ${err.name} - ${err.message}`);
+            });
     };
 
     const stopVideo = () => {
@@ -138,7 +142,7 @@ const VoterRegistration = () => {
         setLoading(true);
         try {
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:8081/api/voter/register`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/voter/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -260,7 +264,8 @@ const VoterRegistration = () => {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g. John Doe"
                                 required
-                                readOnly={inputMode === 'NFC' && formData.name !== ''} // Make readonly if scanned
+                                // Allow editing even if scanned (Officer may need to correct data)
+                                // readOnly={inputMode === 'NFC' && formData.name !== ''} 
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             />
                         </div>

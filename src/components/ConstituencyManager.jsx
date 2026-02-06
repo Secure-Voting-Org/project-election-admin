@@ -12,7 +12,7 @@ const ConstituencyManager = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -24,7 +24,7 @@ const ConstituencyManager = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/constituency`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/constituency`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
