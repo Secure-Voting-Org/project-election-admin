@@ -11,7 +11,7 @@ const LifecycleController = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+            const res = await fetch(`http://${window.location.hostname}:8081/api/election/status`);
             const data = await res.json();
             setStatus(data);
         } catch (err) {
@@ -23,7 +23,7 @@ const LifecycleController = () => {
         if (!window.confirm(`Are you sure you want to switch to ${newPhase} phase?`)) return;
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            await fetch(`http://${window.location.hostname}:8081/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phase: newPhase })
@@ -46,7 +46,7 @@ const LifecycleController = () => {
 
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            await fetch(`http://${window.location.hostname}:8081/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isKillSwitch: !status.is_kill_switch_active })
