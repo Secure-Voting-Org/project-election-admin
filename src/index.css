@@ -36,7 +36,8 @@ body {
   background: white;
   width: 100%;
   max-width: 900px;
-  height: 550px;
+  min-height: 550px;
+  max-height: 90vh;
   display: flex;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -71,6 +72,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow-y: auto;
 }
 
 /* Admin Dashboard Layout */

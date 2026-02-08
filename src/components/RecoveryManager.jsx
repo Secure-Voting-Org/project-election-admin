@@ -11,7 +11,7 @@ export default function RecoveryManager({ admin }) {
     const fetchRequests = async (showSpinner = true) => {
         if (showSpinner) setRefreshing(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/recovery/pending`);
+            const res = await fetch(`http://${window.location.hostname}:8081/api/admin/recovery/pending`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 // Sort by ID descending (newest first)
@@ -41,7 +41,7 @@ export default function RecoveryManager({ admin }) {
         if (!window.confirm(`Approve Recovery Request #${requestId}?`)) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/recovery/approve`, {
+            const res = await fetch(`http://${window.location.hostname}:8081/api/admin/recovery/approve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ requestId, adminId: admin?.id || admin?.username || 'ADMIN' })
