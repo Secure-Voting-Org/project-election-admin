@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Tally from './pages/Tally';
 
 const PrivateRoute = ({ children }) => {
   const isAdmin = localStorage.getItem('admin_token');
@@ -18,6 +19,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tally"
+          element={
+            <PrivateRoute>
+              <Tally />
             </PrivateRoute>
           }
         />
