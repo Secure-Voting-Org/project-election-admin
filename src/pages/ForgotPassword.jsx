@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
+import logo from '../assets/logo.png';
+
 const ForgotPassword = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
@@ -113,7 +115,12 @@ const ForgotPassword = () => {
                 {/* Visual Side */}
                 <div className="auth-visual">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                        <Shield size={48} color="white" />
+                        <img
+                            src={logo}
+                            alt="TrustBallot Logo"
+                            style={{ height: '80px', width: 'auto', background: 'white', borderRadius: '12px', padding: '5px' }}
+                            className="shadow-xl"
+                        />
                         <div>
                             <h2 style={{ margin: 0, fontSize: '1.5rem' }}>TrustBallot</h2>
                             <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>Admin Console</p>

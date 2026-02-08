@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, MapPin, Activity, FileText, Eye, EyeOff, Lock } from 'lucide-react';
 
+import logo from '../assets/logo.png';
+
 const Register = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -76,17 +78,12 @@ const Register = () => {
                 {/* Visual Side */}
                 <div className="auth-visual">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            background: 'white',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Shield size={30} color="#000080" strokeWidth={2.5} />
-                        </div>
+                        <img
+                            src={logo}
+                            alt="TrustBallot Logo"
+                            style={{ height: '80px', width: 'auto', background: 'white', borderRadius: '12px', padding: '5px' }}
+                            className="shadow-xl"
+                        />
                         <div>
                             <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700 }}>TrustBallot</h2>
                             <p style={{ margin: 0, opacity: 0.9, fontSize: '0.85rem' }}>Election Commission of India</p>
