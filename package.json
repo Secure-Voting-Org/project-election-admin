@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "face-api.js": "^0.22.2",
-    "lucide-react": "^0.294.0",
+    "lucide-react": "^0.475.0",
+    "paillier-bigint": "^3.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.30.3"

@@ -86,6 +86,7 @@ const VoterRegistration = () => {
             console.log("FaceAPI Models Loaded");
         } catch (err) {
             console.error("Failed to load FaceAPI models", err);
+            alert(`Failed to load Face AI Models: ${err.message}. Check console.`);
         }
     };
 
@@ -95,7 +96,10 @@ const VoterRegistration = () => {
                 videoRef.current.srcObject = stream;
                 setCameraActive(true);
             })
-            .catch(err => console.error("Camera Error:", err));
+            .catch(err => {
+                console.error("Camera Error:", err);
+                alert(`Camera Error: ${err.name} - ${err.message}`);
+            });
     };
 
     const stopVideo = () => {
@@ -260,7 +264,8 @@ const VoterRegistration = () => {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g. John Doe"
                                 required
-                                readOnly={inputMode === 'NFC' && formData.name !== ''} // Make readonly if scanned
+                                // Allow editing even if scanned (Officer may need to correct data)
+                                // readOnly={inputMode === 'NFC' && formData.name !== ''} 
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             />
                         </div>

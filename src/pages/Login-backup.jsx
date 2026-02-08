@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Lock, MapPin, Activity, FileText, Eye, EyeOff } from 'lucide-react';
-
-import logo from '../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Lock, MapPin, Activity, FileText } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -11,7 +9,6 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
 
     const roles = [
         { id: 'PRE_POLL', label: 'Pre-Poll (Setup)', icon: <MapPin size={18} />, color: '#1565C0', bg: '#E3F2FD' },
@@ -53,12 +50,7 @@ const Login = () => {
                 {/* Visual Side */}
                 <div className="auth-visual">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                        <img
-                            src={logo}
-                            alt="TrustBallot Logo"
-                            style={{ height: '80px', width: 'auto', background: 'white', borderRadius: '12px', padding: '5px' }}
-                            className="shadow-xl"
-                        />
+                        <Shield size={48} color="white" />
                         <div>
                             <h2 style={{ margin: 0, fontSize: '1.5rem' }}>TrustBallot</h2>
                             <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>Admin Console</p>
@@ -129,62 +121,36 @@ const Login = () => {
                             />
                         </div>
 
-                        <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                        <div style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Password</label>
                             <input
-                                type={showPassword ? "text" : "password"}
+                                type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 style={{
-                                    width: '100%', padding: '0.75rem', paddingRight: '3rem', borderRadius: '8px',
+                                    width: '100%', padding: '0.75rem', borderRadius: '8px',
                                     border: '1px solid #ddd', fontSize: '1rem'
                                 }}
                                 required
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '0.75rem',
-                                    top: '2.3rem',
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    color: '#666',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    padding: '0.25rem'
-                                }}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
                         </div>
 
                         {error && <div style={{ marginBottom: '1rem', color: '#dc3545', fontSize: '0.9rem', textAlign: 'center', background: '#ffebee', padding: '0.5rem', borderRadius: '4px' }}>{error}</div>}
 
                         <button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={loading}
                             style={{
                                 width: '100%', padding: '1rem',
                                 background: role === 'PRE_POLL' ? '#1565C0' : (role === 'LIVE' ? '#2E7D32' : '#EF6C00'),
                                 color: 'white', border: 'none', borderRadius: '8px',
                                 fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
-                                opacity: isLoading ? 0.7 : 1
+                                opacity: loading ? 0.7 : 1
                             }}
                         >
-                            {isLoading ? 'Verifying...' : 'Access Dashboard'}
+                            {loading ? 'Verifying...' : 'Access Dashboard'}
                         </button>
                     </form>
-
-                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                        <Link to="/forgot-password" style={{ color: '#000080', fontSize: '0.9rem', textDecoration: 'none', fontWeight: 600 }}>Forgot Password?</Link>
-                    </div>
-
-                    <p style={{ marginTop: '1.5rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
-                        Don't have an account? <Link to="/register" style={{ color: '#000080', fontWeight: 600, textDecoration: 'none' }}>Create Account</Link>
-                    </p>
                 </div>
             </div>
         </div>
