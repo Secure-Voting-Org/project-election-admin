@@ -8,7 +8,7 @@ import VoterRegistration from '../components/VoterRegistration';
 import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
 import RecoveryManager from '../components/RecoveryManager';
-import AuditLogViewer from '../components/AuditLogViewer';
+
 import Tally from './Tally'; // Reusing page as component
 
 const Dashboard = () => {
@@ -31,7 +31,22 @@ const Dashboard = () => {
         }
     }, [navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            // Log logout event before clearing session
+            if (admin) {
+                await fetch(`http://${window.location.hostname}:8081/api/admin/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: admin.username,
+                        role: admin.role
+                    })
+                });
+            }
+        } catch (err) {
+            console.error('Logout logging failed:', err);
+        }
         localStorage.removeItem('admin_token');
         navigate('/');
     };
@@ -80,9 +95,7 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
                             </div>
-                            <div className={`nav-item ${activeTab === 'auditlogs' ? 'active' : ''}`} onClick={() => setActiveTab('auditlogs')}>
-                                <Shield size={20} /> Audit Logs
-                            </div>
+
                         </>
                     )}
 
@@ -126,7 +139,7 @@ const Dashboard = () => {
                     {activeTab === 'verification' && <VoterVerification />}
                     {activeTab === 'registration' && <VoterRegistration />}
                     {activeTab === 'recovery' && <RecoveryManager admin={admin} />}
-                    {activeTab === 'auditlogs' && <AuditLogViewer />}
+
 
                     {activeTab === 'reports' && <div className="card"> Report Generation Module Coming Soon </div>}
                     {activeTab === 'tally' && <Tally />}
