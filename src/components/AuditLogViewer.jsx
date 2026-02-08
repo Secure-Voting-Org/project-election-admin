@@ -13,7 +13,7 @@ export default function AuditLogViewer() {
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/audit/logs`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/logs`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setLogs(data);

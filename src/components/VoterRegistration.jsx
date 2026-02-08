@@ -66,7 +66,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -142,7 +142,7 @@ const VoterRegistration = () => {
         setLoading(true);
         try {
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:8081/api/voter/register`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/voter/register-direct`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -275,7 +275,7 @@ const VoterRegistration = () => {
                                 value={formData.constituency}
                                 onChange={(e) => setFormData({ ...formData, constituency: e.target.value })}
                                 required
-                                disabled={inputMode === 'NFC' && formData.constituency !== ''}
+                                // disabled={inputMode === 'NFC' && formData.constituency !== ''}
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             >
                                 <option value="">Select Constituency</option>
