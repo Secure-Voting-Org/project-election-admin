@@ -53,13 +53,24 @@ const CandidateMaster = () => {
     return (
         <div>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3>Candidate Master</h3>
-                <span className="phase-badge phase-pre">Pre-Poll Setup</span>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
+                background: '#000080',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(0,0,128,0.3)',
+                borderTop: '4px solid #F47920'
+            }}>
+                <h3 style={{ margin: 0, color: 'white' }}>Candidate Master</h3>
+                <span className="phase-badge" style={{ background: '#F47920', color: 'white', border: 'none' }}>Pre-Poll Setup</span>
             </div>
 
-            <div className="card">
-                <h4>Onboard New Candidate</h4>
+            <div className="card" style={{ borderTop: '4px solid #000080', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                <h4 style={{ color: '#000080', fontWeight: 800 }}>Onboard New Candidate</h4>
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
                     {/* Left Column */}
@@ -135,9 +146,17 @@ const CandidateMaster = () => {
 
                     </div>
 
-                    <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
-                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
-                            {loading ? 'Registering...' : <><UserPlus size={16} /> Register Candidate</>}
+                    <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem' }}>
+                        <button type="submit" className="btn" disabled={loading} style={{
+                            width: '100%',
+                            background: '#138808',
+                            color: 'white',
+                            fontWeight: 800,
+                            boxShadow: '0 4px 12px rgba(19,136,8,0.2)',
+                            padding: '1rem',
+                            fontSize: '1.1rem'
+                        }}>
+                            {loading ? 'Registering...' : <><UserPlus size={20} style={{ marginBottom: '-3px', marginRight: '8px' }} /> Register Candidate</>}
                         </button>
                     </div>
                 </form>

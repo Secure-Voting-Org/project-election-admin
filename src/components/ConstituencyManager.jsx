@@ -64,15 +64,26 @@ const ConstituencyManager = () => {
     return (
         <div>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3>Constituency Master</h3>
-                <span className="phase-badge phase-pre">Pre-Poll Setup</span>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
+                background: '#000080',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(0,0,128,0.3)',
+                borderTop: '4px solid #F47920'
+            }}>
+                <h3 style={{ margin: 0, color: 'white' }}>Constituency Master</h3>
+                <span className="phase-badge" style={{ background: '#F47920', color: 'white', border: 'none' }}>Pre-Poll Setup</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
                 {/* Form */}
-                <div className="card">
-                    <h4 style={{ marginTop: 0 }}>Add New Constituency</h4>
+                <div className="card" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: 'none' }}>
+                    <h4 style={{ marginTop: 0, color: '#000080', fontWeight: 800 }}>Add New Constituency</h4>
                     <form onSubmit={handleSubmit}>
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Constituency Name</label>
@@ -107,16 +118,23 @@ const ConstituencyManager = () => {
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             />
                         </div>
-                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
-                            {loading ? 'Adding...' : <><Plus size={16} style={{ marginBottom: '-2px' }} /> Add Constituency</>}
+                        <button type="submit" className="btn" disabled={loading} style={{
+                            width: '100%',
+                            background: '#138808',
+                            color: 'white',
+                            fontWeight: 700,
+                            boxShadow: '0 4px 12px rgba(19,136,8,0.2)',
+                            padding: '1rem'
+                        }}>
+                            {loading ? 'Adding...' : <><Plus size={18} style={{ marginBottom: '-3px', marginRight: '5px' }} /> Add Constituency</>}
                         </button>
                     </form>
                 </div>
 
                 {/* List */}
-                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h3 style={{ margin: 0, color: '#1a1f36' }}>Existing Constituencies ({filteredConstituencies.length})</h3>
+                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', borderTop: '4px solid #000080' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0, color: '#000080', fontWeight: 800 }}>Existing Constituencies ({filteredConstituencies.length})</h3>
                         <div style={{ position: 'relative', width: '300px' }}>
                             <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
                             <input
@@ -141,12 +159,12 @@ const ConstituencyManager = () => {
                         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
                                 <thead>
-                                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #eee' }}>
-                                        <th style={{ padding: '0.75rem' }}>ID</th>
-                                        <th style={{ padding: '0.75rem' }}>Name</th>
-                                        <th style={{ padding: '0.75rem' }}>District</th>
-                                        <th style={{ padding: '0.75rem' }}>State</th>
-                                        <th style={{ padding: '0.75rem' }}>Action</th>
+                                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #000080', background: '#f9f9f9' }}>
+                                        <th style={{ padding: '1rem', color: '#000080', fontWeight: 800 }}>ID</th>
+                                        <th style={{ padding: '1rem', color: '#000080', fontWeight: 800 }}>Name</th>
+                                        <th style={{ padding: '1rem', color: '#000080', fontWeight: 800 }}>District</th>
+                                        <th style={{ padding: '1rem', color: '#000080', fontWeight: 800 }}>State</th>
+                                        <th style={{ padding: '1rem', color: '#000080', fontWeight: 800 }}>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
