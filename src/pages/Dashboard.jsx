@@ -7,6 +7,7 @@ import CandidateMaster from '../components/CandidateMaster';
 import VoterRegistration from '../components/VoterRegistration';
 import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
+import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 
 const Dashboard = () => {
@@ -58,7 +59,10 @@ const Dashboard = () => {
                                 <UserPlus size={20} /> Candidates
                             </div>
                             <div className={`nav-item ${activeTab === 'voters' ? 'active' : ''}`} onClick={() => setActiveTab('voters')}>
-                                <UserPlus size={20} /> Voter Registration
+                                <UserPlus size={20} /> New Voter Registration
+                            </div>
+                            <div className={`nav-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
+                                <UserCheck size={20} /> Pending Approvals
                             </div>
                         </>
                     )}
@@ -70,7 +74,10 @@ const Dashboard = () => {
                                 <UserCheck size={20} /> Voter Verification
                             </div>
                             <div className={`nav-item ${activeTab === 'registration' ? 'active' : ''}`} onClick={() => setActiveTab('registration')}>
-                                <UserPlus size={20} /> Voter Registration
+                                <UserPlus size={20} /> New Voter Registration
+                            </div>
+                            <div className={`nav-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
+                                <UserCheck size={20} /> Pending Approvals
                             </div>
                             <div className={`nav-item ${activeTab === 'lifecycle' ? 'active' : ''}`} onClick={() => setActiveTab('lifecycle')}>
                                 <PlayCircle size={20} /> Election Lifecycle
@@ -113,6 +120,7 @@ const Dashboard = () => {
                     {activeTab === 'constituencies' && <ConstituencyManager />}
                     {activeTab === 'candidates' && <CandidateMaster />}
                     {activeTab === 'voters' && <VoterRegistration />}
+                    {activeTab === 'pending' && <PendingVerifications />}
 
                     {activeTab === 'lifecycle' && <LifecycleController />}
                     {activeTab === 'verification' && <VoterVerification />}
