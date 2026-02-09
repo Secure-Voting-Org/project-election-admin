@@ -66,7 +66,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5001/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -142,7 +142,7 @@ const VoterRegistration = () => {
         setLoading(true);
         try {
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:5000/api/voter/register`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/voter/register-direct`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -169,9 +169,20 @@ const VoterRegistration = () => {
     return (
         <div>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3>Voter Registration & Biometric Setup</h3>
-                <span className="phase-badge phase-pre">Pre-Poll Setup</span>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
+                background: '#000080',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(0,0,128,0.3)',
+                borderTop: '4px solid #F47920'
+            }}>
+                <h3 style={{ margin: 0, color: 'white' }}>Voter Registration & Biometric Setup</h3>
+                <span className="phase-badge" style={{ background: '#F47920', color: 'white', border: 'none' }}>PRE-POLL SETUP</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -275,7 +286,7 @@ const VoterRegistration = () => {
                                 value={formData.constituency}
                                 onChange={(e) => setFormData({ ...formData, constituency: e.target.value })}
                                 required
-                                disabled={inputMode === 'NFC' && formData.constituency !== ''}
+                                // disabled={inputMode === 'NFC' && formData.constituency !== ''}
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             >
                                 <option value="">Select Constituency</option>
@@ -285,7 +296,7 @@ const VoterRegistration = () => {
                             </select>
                         </div>
 
-                        <div style={{ marginTop: '2rem', padding: '1rem', background: '#e3f2fd', borderRadius: '8px', border: '1px solid #90caf9' }}>
+                        <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px', border: '1px solid #ddd', borderLeft: '4px solid #F47920' }}>
                             <strong>Face Data Status:</strong>
                             {faceDescriptor ?
                                 <span style={{ color: 'green', fontWeight: 'bold', marginLeft: '0.5rem' }}>Captured <span style={{ fontSize: '1.2rem' }}>✅</span></span> :
@@ -295,7 +306,7 @@ const VoterRegistration = () => {
 
                         <button
                             type="submit"
-                            className="btn btn-primary"
+                            className="btn btn-green"
                             disabled={loading || !faceDescriptor}
                             style={{ width: '100%', marginTop: '1rem', opacity: (!faceDescriptor || loading) ? 0.6 : 1 }}
                         >

@@ -9,6 +9,10 @@ import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
+import FinalReports from '../components/FinalReports';
+import AuditLogViewer from '../components/AuditLogViewer';
+
+import Tally from './Tally'; // Reusing page as component
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -30,7 +34,22 @@ const Dashboard = () => {
         }
     }, [navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            // Log logout event before clearing session
+            if (admin) {
+                await fetch(`http://${window.location.hostname}:8081/api/admin/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: admin.username,
+                        role: admin.role
+                    })
+                });
+            }
+        } catch (err) {
+            console.error('Logout logging failed:', err);
+        }
         localStorage.removeItem('admin_token');
         navigate('/');
     };
@@ -82,9 +101,11 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'lifecycle' ? 'active' : ''}`} onClick={() => setActiveTab('lifecycle')}>
                                 <PlayCircle size={20} /> Election Lifecycle
                             </div>
+
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
                             </div>
+
                         </>
                     )}
 
@@ -94,8 +115,16 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
                                 <StopCircle size={20} /> Final Reports
                             </div>
+                            <div className={`nav-item ${activeTab === 'tally' ? 'active' : ''}`} onClick={() => setActiveTab('tally')}>
+                                <Shield size={20} /> Tally Votes
+                            </div>
                         </>
                     )}
+
+                    {/* Common Options */}
+                    <div className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
+                        <Shield size={20} /> Audit Logs
+                    </div>
                 </nav>
 
                 <div style={{ marginTop: 'auto' }}>
@@ -106,12 +135,13 @@ const Dashboard = () => {
             </aside>
 
             <main className="dashboard-main">
-                <div className="top-bar">
-                    <h2 style={{ margin: 0 }}>
+                <div className="top-bar" style={{ borderBottom: '2px solid #ddd', paddingBottom: '1rem', marginBottom: '2rem' }}>
+                    <h2 style={{ margin: 0, color: '#000080', fontWeight: 800, letterSpacing: '-0.02em' }}>
                         {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Manager
                     </h2>
-                    <div className="user-profile">
-                        Officer: <strong>{admin.name}</strong>
+                    <div className="user-profile" style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Shield size={16} color="#000080" />
+                        <span>Officer: <strong style={{ color: '#000080' }}>{admin.name}</strong></span>
                     </div>
                 </div>
 
@@ -127,7 +157,10 @@ const Dashboard = () => {
                     {activeTab === 'registration' && <VoterRegistration />}
                     {activeTab === 'recovery' && <RecoveryManager admin={admin} />}
 
-                    {activeTab === 'reports' && <div className="card"> Report Generation Module Coming Soon </div>}
+
+                    {activeTab === 'reports' && <FinalReports />}
+                    {activeTab === 'tally' && <Tally />}
+                    {activeTab === 'audit' && <AuditLogViewer />}
                 </div>
             </main>
         </div>
