@@ -11,7 +11,7 @@ const LifecycleController = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/election/status`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
             const data = await res.json();
             setStatus(data);
         } catch (err) {
@@ -23,7 +23,7 @@ const LifecycleController = () => {
         if (!window.confirm(`Are you sure you want to switch to ${newPhase} phase?`)) return;
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:8081/api/election/update`, {
+            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phase: newPhase })
@@ -46,7 +46,7 @@ const LifecycleController = () => {
 
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:8081/api/election/update`, {
+            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isKillSwitch: !status.is_kill_switch_active })
@@ -181,7 +181,36 @@ const LifecycleController = () => {
                         >
                             <Play size={24} style={{ marginBottom: '-4px', marginRight: '8px' }} />
                             GO LIVE
+                {status.phase === 'LIVE' && (
+                    <div className="card" style={{ border: '2px solid #ffcdd2', background: '#fffbee' }}>
+                        <h4 style={{ marginTop: 0, color: '#c62828', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AlertTriangle size={20} /> Emergency Zone
+                        </h4>
+                        <p>
+                            The Global Kill Switch immediately disables the "Cast Vote" functionality on all voter terminals connected to the network. Use only in case of security breach or technical failure.
+                        </p>
+
+                        <button
+                            onClick={toggleKillSwitch}
+                            disabled={loading}
+                            style={{
+                                width: '100%',
+                                padding: '1.5rem',
+                                fontSize: '1.2rem',
+                                fontWeight: 800,
+                                borderRadius: '12px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                marginTop: '1rem',
+                                background: status.is_kill_switch_active ? '#2e7d32' : '#c62828',
+                                color: 'white',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                            }}
+                        >
+                            {status.is_kill_switch_active ? 'RESUME ELECTION' : 'STOP ELECTION (KILL SWITCH)'}
                         </button>
+                    </div>
+                )}
 
                         <button
                             className="btn"

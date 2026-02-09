@@ -93,6 +93,7 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'lifecycle' ? 'active' : ''}`} onClick={() => setActiveTab('lifecycle')}>
                                 <PlayCircle size={20} /> Election Lifecycle
                             </div>
+
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
                             </div>
