@@ -9,6 +9,7 @@ import LifecycleController from '../components/LifecycleController';
 import VoterVerification from '../components/VoterVerification';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
+import AuditLogViewer from '../components/AuditLogViewer';
 
 import Tally from './Tally'; // Reusing page as component
 
@@ -112,6 +113,11 @@ const Dashboard = () => {
                             </div>
                         </>
                     )}
+
+                    {/* Common Options */}
+                    <div className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
+                        <Shield size={20} /> Audit Logs
+                    </div>
                 </nav>
 
                 <div style={{ marginTop: 'auto' }}>
@@ -146,6 +152,7 @@ const Dashboard = () => {
 
                     {activeTab === 'reports' && <FinalReports />}
                     {activeTab === 'tally' && <Tally />}
+                    {activeTab === 'audit' && <AuditLogViewer />}
                 </div>
             </main>
         </div>

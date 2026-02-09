@@ -18,7 +18,7 @@ const CandidateMaster = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5001/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -32,7 +32,7 @@ const CandidateMaster = () => {
         // Note: We need to implement the backend route for this properly. 
         // Currently pointing to a route we need to verify exists or create.
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/candidate`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/candidate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

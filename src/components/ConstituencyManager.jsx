@@ -13,7 +13,7 @@ const ConstituencyManager = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5001/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -25,7 +25,7 @@ const ConstituencyManager = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituency`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/constituency`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -44,7 +44,7 @@ const ConstituencyManager = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this constituency?")) return;
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituency/${id}`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/constituency/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
