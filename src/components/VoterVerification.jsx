@@ -44,7 +44,7 @@ const VoterVerification = () => {
             // Let's assume we'll add GET /api/voter/:id or use a generic search
 
             // Temporary: Use a direct DB call via a new route we need to create
-            const res = await fetch(`http://${window.location.hostname}:5001/api/voter/${voterId}`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/voter/${voterId}`);
             const data = await res.json();
 
             if (res.ok) {

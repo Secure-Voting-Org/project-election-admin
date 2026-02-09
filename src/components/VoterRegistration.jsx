@@ -66,7 +66,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5001/api/constituencies`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -142,7 +142,7 @@ const VoterRegistration = () => {
         setLoading(true);
         try {
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/voter/register-direct`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/voter/register-direct`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

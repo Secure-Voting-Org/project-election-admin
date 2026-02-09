@@ -10,7 +10,7 @@ import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
-import AuditLogViewer from '../components/AuditLogViewer';
+
 
 import Tally from './Tally'; // Reusing page as component
 
@@ -38,7 +38,7 @@ const Dashboard = () => {
         try {
             // Log logout event before clearing session
             if (admin) {
-                await fetch(`http://${window.location.hostname}:8081/api/admin/logout`, {
+                await fetch(`http://${window.location.hostname}:5000/api/admin/logout`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -92,15 +92,6 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'verification' ? 'active' : ''}`} onClick={() => setActiveTab('verification')}>
                                 <UserCheck size={20} /> Voter Verification
                             </div>
-                            <div className={`nav-item ${activeTab === 'registration' ? 'active' : ''}`} onClick={() => setActiveTab('registration')}>
-                                <UserPlus size={20} /> New Voter Registration
-                            </div>
-                            <div className={`nav-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
-                                <UserCheck size={20} /> Pending Approvals
-                            </div>
-                            <div className={`nav-item ${activeTab === 'lifecycle' ? 'active' : ''}`} onClick={() => setActiveTab('lifecycle')}>
-                                <PlayCircle size={20} /> Election Lifecycle
-                            </div>
 
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
@@ -121,10 +112,7 @@ const Dashboard = () => {
                         </>
                     )}
 
-                    {/* Common Options */}
-                    <div className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-                        <Shield size={20} /> Audit Logs
-                    </div>
+
                 </nav>
 
                 <div style={{ marginTop: 'auto' }}>
@@ -135,13 +123,19 @@ const Dashboard = () => {
             </aside>
 
             <main className="dashboard-main">
-                <div className="top-bar" style={{ borderBottom: '2px solid #ddd', paddingBottom: '1rem', marginBottom: '2rem' }}>
+                <div className="top-bar" style={{ borderBottom: '2px solid #ddd', paddingBottom: '1rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ margin: 0, color: '#000080', fontWeight: 800, letterSpacing: '-0.02em' }}>
                         {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Manager
                     </h2>
-                    <div className="user-profile" style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Shield size={16} color="#000080" />
-                        <span>Officer: <strong style={{ color: '#000080' }}>{admin.name}</strong></span>
+
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        {/* Status Indicator */}
+                        <ElectionStatusBadge />
+
+                        <div className="user-profile" style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Shield size={16} color="#000080" />
+                            <span>Officer: <strong style={{ color: '#000080' }}>{admin.name}</strong></span>
+                        </div>
                     </div>
                 </div>
 
@@ -160,9 +154,59 @@ const Dashboard = () => {
 
                     {activeTab === 'reports' && <FinalReports />}
                     {activeTab === 'tally' && <Tally />}
-                    {activeTab === 'audit' && <AuditLogViewer />}
+
                 </div>
             </main>
+        </div>
+    );
+};
+
+// Internal Component for Status Badge
+const ElectionStatusBadge = () => {
+    const [status, setStatus] = useState(null);
+
+    useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+                const data = await res.json();
+                setStatus(data);
+            } catch (err) {
+                console.error('Failed to status', err);
+            }
+        };
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 10000); // Poll every 10s
+        return () => clearInterval(interval);
+    }, []);
+
+    if (!status) return null;
+
+    const isLive = status.phase === 'LIVE' && !status.is_kill_switch_active;
+    const isSuspended = status.is_kill_switch_active;
+
+    return (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '0.5rem 1rem',
+            borderRadius: '20px',
+            background: isSuspended ? '#FFF3E0' : (isLive ? '#E8F5E9' : '#E3F2FD'),
+            color: isSuspended ? '#F47920' : (isLive ? '#138808' : '#1565C0'),
+            border: `1px solid ${isSuspended ? '#FFE0B2' : (isLive ? '#C8E6C9' : '#BBDEFB')}`,
+            fontSize: '0.85rem',
+            fontWeight: 700
+        }}>
+            <div style={{
+                width: '8px', height: '8px',
+                borderRadius: '50%',
+                background: isSuspended ? '#F47920' : (isLive ? '#138808' : '#1565C0'),
+                boxShadow: isLive ? '0 0 8px #138808' : 'none',
+                animation: isLive ? 'pulse 2s infinite' : 'none'
+            }}></div>
+            {status.phase.replace('_', ' ')}
+            {isSuspended && <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(SUSPENDED)</span>}
         </div>
     );
 };

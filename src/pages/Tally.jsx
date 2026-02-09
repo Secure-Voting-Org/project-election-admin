@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as paillier from 'paillier-bigint';
 import { Lock, Unlock, BarChart3, Trophy, TrendingUp, CheckCircle, AlertCircle, Download } from 'lucide-react';
 
-const API_URL = "http://localhost:8081/api";
+const API_URL = "http://localhost:5000/api";
 
 const Tally = () => {
     const [votes, setVotes] = useState([]);
