@@ -3,6 +3,7 @@ import { UserPlus } from 'lucide-react';
 
 const CandidateMaster = () => {
     const [constituencies, setConstituencies] = useState([]);
+    const [candidates, setCandidates] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         party: '',
@@ -14,11 +15,12 @@ const CandidateMaster = () => {
 
     useEffect(() => {
         fetchConstituencies();
+        fetchCandidates();
     }, []);
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch('http://localhost:5000/api/constituencies');
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -26,13 +28,21 @@ const CandidateMaster = () => {
         }
     };
 
+    const fetchCandidates = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/candidates');
+            const data = await res.json();
+            setCandidates(data);
+        } catch (err) {
+            console.error('Failed to fetch candidates', err);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // Note: We need to implement the backend route for this properly. 
-        // Currently pointing to a route we need to verify exists or create.
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/candidate`, {
+            const res = await fetch('http://localhost:5000/api/candidate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -40,6 +50,7 @@ const CandidateMaster = () => {
             if (res.ok) {
                 alert('Candidate Added Successfully!');
                 setFormData({ name: '', party: '', symbol: '', constituency: '', color: '#000000' });
+                fetchCandidates(); // Refresh list
             } else {
                 alert('Failed to add candidate. Check backend.');
             }
@@ -49,6 +60,18 @@ const CandidateMaster = () => {
             setLoading(false);
         }
     };
+
+    // Group candidates by District -> Constituency
+    const groupedCandidates = candidates.reduce((acc, candidate) => {
+        const district = candidate.district || 'Unknown District';
+        const constituency = candidate.constituency || 'Unknown Constituency';
+
+        if (!acc[district]) acc[district] = {};
+        if (!acc[district][constituency]) acc[district][constituency] = [];
+
+        acc[district][constituency].push(candidate);
+        return acc;
+    }, {});
 
     return (
         <div>
@@ -69,7 +92,7 @@ const CandidateMaster = () => {
                 <span className="phase-badge" style={{ background: '#F47920', color: 'white', border: 'none' }}>Pre-Poll Setup</span>
             </div>
 
-            <div className="card" style={{ borderTop: '4px solid #000080', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <div className="card" style={{ borderTop: '4px solid #000080', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
                 <h4 style={{ color: '#000080', fontWeight: 800 }}>Onboard New Candidate</h4>
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
@@ -98,20 +121,6 @@ const CandidateMaster = () => {
                                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ddd' }}
                             />
                         </div>
-
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Party/Symbol Color</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <input
-                                    type="color"
-                                    value={formData.color}
-                                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                                    style={{ height: '40px', width: '60px', border: 'none', cursor: 'pointer' }}
-                                />
-                                <span style={{ fontSize: '0.9rem', color: '#666' }}>{formData.color}</span>
-                            </div>
-                        </div>
-
                     </div>
 
                     {/* Right Column */}
@@ -160,6 +169,61 @@ const CandidateMaster = () => {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            {/* Candidate List Dashboard */}
+            <div className="card" style={{ borderTop: '4px solid #F47920' }}>
+                <h4 style={{ color: '#000080', fontWeight: 800, marginBottom: '1.5rem' }}>Registered Candidates Overview</h4>
+
+                {Object.keys(groupedCandidates).length === 0 ? (
+                    <p style={{ color: '#666', fontStyle: 'italic' }}>No candidates registered yet.</p>
+                ) : (
+                    Object.entries(groupedCandidates).map(([district, districtConstituencies]) => (
+                        <div key={district} style={{ marginBottom: '2rem' }}>
+                            <h5 style={{
+                                background: '#eee',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '4px',
+                                borderLeft: '4px solid #000080',
+                                margin: '0 0 1rem 0'
+                            }}>
+                                {district} District
+                            </h5>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', paddingLeft: '1rem' }}>
+                                {Object.entries(districtConstituencies).map(([constituency, cands]) => (
+                                    <div key={constituency} style={{
+                                        border: '1px solid #ddd',
+                                        borderRadius: '8px',
+                                        padding: '1rem',
+                                        background: '#fff'
+                                    }}>
+                                        <h6 style={{ margin: '0 0 0.5rem 0', color: '#F47920', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+                                            {constituency}
+                                        </h6>
+                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {cands.map((cand, idx) => (
+                                                <li key={idx} style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    padding: '0.5rem 0',
+                                                    borderBottom: idx < cands.length - 1 ? '1px dashed #eee' : 'none'
+                                                }}>
+                                                    <div>
+                                                        <span style={{ fontWeight: 600 }}>{cand.name}</span>
+                                                        <div style={{ fontSize: '0.8rem', color: '#666' }}>{cand.party}</div>
+                                                    </div>
+                                                    <div style={{ fontSize: '1.5rem' }}>{cand.symbol}</div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

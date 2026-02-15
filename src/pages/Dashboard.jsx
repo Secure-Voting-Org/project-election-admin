@@ -38,7 +38,7 @@ const Dashboard = () => {
         try {
             // Log logout event before clearing session
             if (admin) {
-                await fetch(`http://${window.location.hostname}:5000/api/admin/logout`, {
+                await fetch('/api/admin/logout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -168,7 +168,7 @@ const ElectionStatusBadge = () => {
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+                const res = await fetch('/api/election/status');
                 const data = await res.json();
                 setStatus(data);
             } catch (err) {
