@@ -20,7 +20,7 @@ const CandidateMaster = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/constituencies');
+            const res = await fetch('http://localhost:5001/api/constituencies');
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -30,7 +30,7 @@ const CandidateMaster = () => {
 
     const fetchCandidates = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/candidates');
+            const res = await fetch('http://localhost:5001/api/candidates');
             const data = await res.json();
             setCandidates(data);
         } catch (err) {
@@ -42,7 +42,7 @@ const CandidateMaster = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/candidate', {
+            const res = await fetch('http://localhost:5001/api/candidate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
