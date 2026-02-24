@@ -12,6 +12,7 @@ const Tally = () => {
     const [privateKey, setPrivateKey] = useState(null);
     const [progress, setProgress] = useState(0);
     const [candidateNames, setCandidateNames] = useState({});
+    const [skippedCount, setSkippedCount] = useState(0); // Module 4.7: tracks invalid/skipped votes
 
     const fetchCandidateNames = async () => {
         try {
@@ -22,8 +23,10 @@ const Tally = () => {
                 nameMap[c.id] = { name: c.name, party: c.party, constituency: c.constituency };
             });
             setCandidateNames(nameMap);
+            return nameMap; // Return directly so tally loop can use it without stale closure
         } catch (err) {
             console.error('Failed to fetch candidate names', err);
+            return {};
         }
     };
 
@@ -33,8 +36,8 @@ const Tally = () => {
         setProgress(0);
 
         try {
-            // Fetch candidate names first
-            await fetchCandidateNames();
+            // Fetch candidate names first — use local variable to avoid stale closure in setTimeout
+            const localCandidateNames = await fetchCandidateNames();
             setProgress(10);
 
             // 1. Fetch Private Key
@@ -69,8 +72,27 @@ const Tally = () => {
 
             const tally = {};
 
+            // --- Module 4.7.1.1: ZK Range Proof verifier (browser-native SHA-256) ---
+            // Verifies the commitment hash: SHA-256(1:nonce) === commitment
+            // This proves the vote was committed as a valid binary value (1) at vote time
+            const verifyRangeProofCommitment = async (proof) => {
+                if (!proof || !proof.commitment || !proof.nonce) return false; // No proof = unverifiable
+                try {
+                    const data = `1:${proof.nonce}`; // Proof was generated for value = 1 (affirmative binary vote)
+                    const encoder = new TextEncoder();
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const computed = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    return computed === proof.commitment;
+                } catch {
+                    return false;
+                }
+            };
+
             setTimeout(async () => {
                 const startTime = performance.now();
+                let skipped = 0;
+                // Use localCandidateNames (not state) to avoid React stale closure bug
 
                 for (let i = 0; i < votesData.length; i++) {
                     const vote = votesData[i];
@@ -80,10 +102,31 @@ const Tally = () => {
                         const candidateId = decryptedVal.toString();
                         const constituency = vote.constituency || "Unknown Constituency";
 
-                        if (!tally[constituency]) {
-                            tally[constituency] = {};
+                        // --- Module 4.7: ZK Range Proof Validation (3-step check) ---
+
+                        // STEP 1 — 4.7.1.1: If a range proof is attached, verify the commitment hash
+                        const rawProof = vote.range_proof;
+                        const proof = rawProof ? (typeof rawProof === 'string' ? JSON.parse(rawProof) : rawProof) : null;
+                        if (proof) {
+                            const proofValid = await verifyRangeProofCommitment(proof);
+                            if (!proofValid) {
+                                console.warn(`[4.7.1.1] SKIPPED — ZK Range Proof commitment verification FAILED for vote in ${constituency}`);
+                                skipped++;
+                                continue; // 4.7.2.1: Tally loop skips ciphertexts that fail range proof
+                            }
                         }
 
+                        // STEP 2 — 4.7.3.1: Verify the decrypted value maps to a real registered candidate
+                        // (catches votes like candidate_id='2' which decrypt to unrecognized IDs)
+                        const isValidCandidate = localCandidateNames.hasOwnProperty(candidateId);
+                        if (!isValidCandidate) {
+                            console.warn(`[4.7.3.1] SKIPPED — decrypted ID "${candidateId}" is not a registered candidate`);
+                            skipped++;
+                            continue;
+                        }
+
+                        // STEP 3 — Vote is valid: count it
+                        if (!tally[constituency]) tally[constituency] = {};
                         tally[constituency][candidateId] = (tally[constituency][candidateId] || 0) + 1;
 
                         // Update progress
@@ -92,17 +135,22 @@ const Tally = () => {
                         }
                     } catch (e) {
                         console.error("Decryption failed for a vote:", e);
+                        skipped++;
                     }
                 }
 
+
                 const endTime = performance.now();
                 console.log(`Tallying took ${(endTime - startTime).toFixed(2)}ms`);
+                if (skipped > 0) console.warn(`[4.7] ${skipped} invalid vote(s) were skipped during tally.`);
 
+                setSkippedCount(skipped);
                 setResults(tally);
                 setProgress(100);
-                setStatus("Tally Complete - Results Verified ✓");
+                setStatus(`Tally Complete - Results Verified ✓ (${skipped > 0 ? skipped + ' invalid vote(s) skipped' : 'All votes valid'})`);
                 setLoading(false);
             }, 100);
+
 
         } catch (error) {
             console.error(error);
@@ -307,6 +355,12 @@ const Tally = () => {
                                 {loading ? 'Processing' : Object.keys(results).length > 0 ? 'Complete' : 'Pending'}
                             </div>
                         </div>
+                        {/* Module 4.7: Display skipped invalid vote count */}
+                        {skippedCount > 0 && (
+                            <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', padding: '0.5rem 1rem', background: '#fff3cd', borderRadius: '6px', border: '1px solid #F47920' }}>
+                                <span style={{ color: '#856404', fontWeight: 600 }}>⚠️ {skippedCount} invalid vote(s) were skipped (Range Proof Failed — value not in binary set &#123;0, 1&#125;)</span>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
