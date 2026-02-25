@@ -107,7 +107,7 @@ const Dashboard = () => {
                                 <StopCircle size={20} /> Final Reports
                             </div>
                             <div className={`nav-item ${activeTab === 'tally' ? 'active' : ''}`} onClick={() => setActiveTab('tally')}>
-                                <Shield size={20} /> Tally Votes
+                                Tally Votes
                             </div>
                         </>
                     )}
