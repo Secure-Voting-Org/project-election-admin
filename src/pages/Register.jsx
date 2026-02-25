@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, MapPin, Activity, FileText, Eye, EyeOff, Lock } from 'lucide-react';
+import API_BASE from '../config/api';
 
 import logo from '../assets/logo.png';
+import API_BASE from '../config/api';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -46,7 +48,7 @@ const Register = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/admin/register', {
+            const response = await fetch(\\\/api/admin/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

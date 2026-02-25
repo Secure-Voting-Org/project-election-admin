@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield } from 'lucide-react';
+import API_BASE from '../config/api';
 
 import ConstituencyManager from '../components/ConstituencyManager';
 import CandidateMaster from '../components/CandidateMaster';
@@ -10,6 +11,7 @@ import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
+import API_BASE from '../config/api';
 
 
 import Tally from './Tally'; // Reusing page as component
@@ -38,7 +40,7 @@ const Dashboard = () => {
         try {
             // Log logout event before clearing session
             if (admin) {
-                await fetch('/api/admin/logout', {
+                await fetch(\\\/api/admin/logout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -168,7 +170,7 @@ const ElectionStatusBadge = () => {
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const res = await fetch('/api/election/status');
+                const res = await fetch(\\\/api/election/status');
                 const data = await res.json();
                 setStatus(data);
             } catch (err) {

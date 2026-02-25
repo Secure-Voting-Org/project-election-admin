@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Lock, MapPin, Activity, FileText, Eye, EyeOff } from 'lucide-react';
+import API_BASE from '../config/api';
 
 import logo from '../assets/logo.png';
+import API_BASE from '../config/api';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -25,7 +27,7 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/admin/login', {
+            const response = await fetch(\\\/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, role })
