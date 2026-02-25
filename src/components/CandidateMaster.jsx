@@ -36,7 +36,7 @@ const CandidateMaster = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch('http://localhost:5001/api/constituencies');
+            const res = await fetch('http://localhost:5000/api/constituencies');
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -46,7 +46,7 @@ const CandidateMaster = () => {
 
     const fetchCandidates = async () => {
         try {
-            const res = await fetch('http://localhost:5001/api/candidates');
+            const res = await fetch('http://localhost:5000/api/candidates');
             const data = await res.json();
             setCandidates(data);
         } catch (err) {
@@ -61,13 +61,13 @@ const CandidateMaster = () => {
         try {
             let res;
             if (editingId) {
-                res = await fetch(`http://localhost:5001/api/candidate/${editingId}`, {
+                res = await fetch(`http://localhost:5000/api/candidate/${editingId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
             } else {
-                res = await fetch('http://localhost:5001/api/candidate', {
+                res = await fetch('http://localhost:5000/api/candidate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -107,7 +107,7 @@ const CandidateMaster = () => {
     const handleDelete = async (candidate) => {
         if (!window.confirm(`Remove "${candidate.name}" from the ballot in ${candidate.constituency}?`)) return;
         try {
-            const res = await fetch(`http://localhost:5001/api/candidate/${candidate.id}`, { method: 'DELETE' });
+            const res = await fetch(`http://localhost:5000/api/candidate/${candidate.id}`, { method: 'DELETE' });
             if (res.ok) {
                 setMessage({ type: 'success', text: `🗑️ "${candidate.name}" removed from ballot.` });
                 fetchCandidates();
