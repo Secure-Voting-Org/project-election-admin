@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield } from 'lucide-react';
+import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield, Layers } from 'lucide-react';
 
 import ConstituencyManager from '../components/ConstituencyManager';
 import CandidateMaster from '../components/CandidateMaster';
@@ -10,7 +10,7 @@ import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
-
+import ElectionPhase from './ElectionPhase'; // Module 5.1 — Election Phase State Machine
 
 import Tally from './Tally'; // Reusing page as component
 
@@ -83,6 +83,9 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
                                 <UserCheck size={20} /> Pending Approvals
                             </div>
+                            <div className={`nav-item ${activeTab === 'election-phase' ? 'active' : ''}`} onClick={() => setActiveTab('election-phase')}>
+                                <Layers size={20} /> Election Phase
+                            </div>
                         </>
                     )}
 
@@ -96,7 +99,9 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'recovery' ? 'active' : ''}`} onClick={() => setActiveTab('recovery')}>
                                 <Shield size={20} /> Account Recovery
                             </div>
-
+                            <div className={`nav-item ${activeTab === 'election-phase' ? 'active' : ''}`} onClick={() => setActiveTab('election-phase')}>
+                                <Layers size={20} /> Election Phase
+                            </div>
                         </>
                     )}
 
@@ -108,6 +113,9 @@ const Dashboard = () => {
                             </div>
                             <div className={`nav-item ${activeTab === 'tally' ? 'active' : ''}`} onClick={() => setActiveTab('tally')}>
                                 Tally Votes
+                            </div>
+                            <div className={`nav-item ${activeTab === 'election-phase' ? 'active' : ''}`} onClick={() => setActiveTab('election-phase')}>
+                                <Layers size={20} /> Election Phase
                             </div>
                         </>
                     )}
@@ -154,6 +162,7 @@ const Dashboard = () => {
 
                     {activeTab === 'reports' && <FinalReports />}
                     {activeTab === 'tally' && <Tally />}
+                    {activeTab === 'election-phase' && <ElectionPhase />}
 
                 </div>
             </main>
