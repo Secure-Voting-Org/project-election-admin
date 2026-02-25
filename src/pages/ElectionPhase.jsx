@@ -142,7 +142,7 @@ const ElectionPhase = () => {
                     <span style={{ fontSize: '1.5rem' }}>🗓️</span>
                     <div>
                         <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>Election Phase Controller</h2>
-                        <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>Module 5.1 — Global State Machine for Election Lifecycle</p>
+                        <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>Global State Machine for Election Lifecycle</p>
                     </div>
                 </div>
             </div>
