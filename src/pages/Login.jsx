@@ -4,7 +4,7 @@ import { Shield, Lock, MapPin, Activity, FileText, Eye, EyeOff } from 'lucide-re
 import API_BASE from '../config/api';
 
 import logo from '../assets/logo.png';
-import API_BASE from '../config/api';
+
 
 const Login = () => {
     const navigate = useNavigate();
@@ -27,7 +27,7 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(\\\/api/admin/login', {
+            const response = await fetch(`${API_BASE}/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, role })

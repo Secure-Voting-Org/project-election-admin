@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { UserPlus, Edit2, Trash2, Lock, X, Users, Award, MapPin } from 'lucide-react';
-import API_BASE from '../../config/api';
+import API_BASE from '../config/api';
 
 const CandidateMaster = () => {
     const [constituencies, setConstituencies] = useState([]);
@@ -27,7 +27,7 @@ const CandidateMaster = () => {
 
     const fetchElectionPhase = async () => {
         try {
-            const res = await fetch(\\\/api/election/status');
+            const res = await fetch(`${API_BASE}/api/election/status`);
             if (res.ok) {
                 const data = await res.json();
                 setElectionPhase(data.phase || 'PRE_POLL');

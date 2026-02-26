@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Loader, CreditCard } from 'lucide-react';
-import API_BASE from '../../config/api';
+import API_BASE from '../config/api';
 
 const PendingVerifications = () => {
     const [applications, setApplications] = useState([]);
@@ -27,7 +27,7 @@ const PendingVerifications = () => {
 
     const fetchPending = async () => {
         try {
-            const res = await fetch(\\\/api/admin/pending-voters');
+            const res = await fetch(`${API_BASE}/api/admin/pending-voters`);
             const data = await res.json();
             setApplications(data);
         } catch (err) {
@@ -39,7 +39,7 @@ const PendingVerifications = () => {
 
     const fetchAccepted = async () => {
         try {
-            const res = await fetch(\\\/api/admin/approved-voters');
+            const res = await fetch(`${API_BASE}/api/admin/approved-voters`);
             const data = await res.json();
             setAcceptedApps(data);
         } catch (err) {
@@ -49,7 +49,7 @@ const PendingVerifications = () => {
 
     const fetchRejected = async () => {
         try {
-            const res = await fetch(\\\/api/admin/rejected-voters');
+            const res = await fetch(`${API_BASE}/api/admin/rejected-voters`);
             const data = await res.json();
             setRejectedApps(data);
         } catch (err) {
@@ -60,7 +60,7 @@ const PendingVerifications = () => {
     const handleApprove = async (appId) => {
         if (!window.confirm("Approve this voter application?")) return;
         try {
-            const res = await fetch(\\\/api/admin/approve-voter', {
+            const res = await fetch(`${API_BASE}/api/admin/approve-voter`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ applicationId: appId })
@@ -84,7 +84,7 @@ const PendingVerifications = () => {
         if (!window.confirm("Are you sure you want to reject this application?")) return;
 
         try {
-            const res = await fetch(\\\/api/admin/reject-voter', {
+            const res = await fetch(`${API_BASE}/api/admin/reject-voter`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ applicationId: appId, reason })
@@ -137,7 +137,7 @@ const PendingVerifications = () => {
         if (!nfcTagId.trim()) return;
 
         try {
-            const res = await fetch(\\\/api/admin/assign-nfc', {
+            const res = await fetch(`${API_BASE}/api/admin/assign-nfc`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -11,7 +11,7 @@ import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
-import API_BASE from '../config/api';
+
 
 
 import Tally from './Tally'; // Reusing page as component
@@ -40,7 +40,7 @@ const Dashboard = () => {
         try {
             // Log logout event before clearing session
             if (admin) {
-                await fetch(\\\/api/admin/logout', {
+                await fetch(`${API_BASE}/api/admin/logout`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -170,7 +170,7 @@ const ElectionStatusBadge = () => {
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const res = await fetch(\\\/api/election/status');
+                const res = await fetch(`${API_BASE}/api/election/status`);
                 const data = await res.json();
                 setStatus(data);
             } catch (err) {

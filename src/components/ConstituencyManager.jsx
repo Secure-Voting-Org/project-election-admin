@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Plus, MapPin, Trash2, Search } from 'lucide-react';
-import API_BASE from '../../config/api';
+import API_BASE from '../config/api';
 
 const ConstituencyManager = () => {
     const [constituencies, setConstituencies] = useState([]);
@@ -14,7 +14,7 @@ const ConstituencyManager = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(\\\/api/constituencies');
+            const res = await fetch(`${API_BASE}/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -26,7 +26,7 @@ const ConstituencyManager = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(\\\/api/constituency', {
+            const res = await fetch(`${API_BASE}/api/constituency`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
