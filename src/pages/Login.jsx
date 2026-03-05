@@ -37,7 +37,8 @@ const Login = () => {
 
             if (data.success) {
                 // Store session
-                localStorage.setItem('admin_token', JSON.stringify(data.admin));
+                localStorage.setItem('admin_token', data.token);
+                localStorage.setItem('admin_user', JSON.stringify(data.admin));
                 navigate('/dashboard');
             } else {
                 setError(data.error || 'Login Failed');

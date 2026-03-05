@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as paillier from 'paillier-bigint';
-import { Lock, Unlock, BarChart3, Trophy, TrendingUp, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import secrets from 'secrets.js-grempe';
+import { Lock, Unlock, BarChart3, Trophy, TrendingUp, CheckCircle, AlertCircle, Download, KeyRound, ShieldAlert } from 'lucide-react';
 
 const API_URL = "/api";
 
@@ -12,6 +13,10 @@ const Tally = () => {
     const [privateKey, setPrivateKey] = useState(null);
     const [progress, setProgress] = useState(0);
     const [candidateNames, setCandidateNames] = useState({});
+
+    // Ceremony State
+    const [shares, setShares] = useState({ share1: '', share2: '', share3: '' });
+    const [ceremonyStatus, setCeremonyStatus] = useState('');
 
     const fetchCandidateNames = async () => {
         try {
@@ -27,7 +32,53 @@ const Tally = () => {
         }
     };
 
+    const handleShareChange = (e) => {
+        setShares({ ...shares, [e.target.name]: e.target.value.trim() });
+    };
+
+    const reconstructKey = async () => {
+        setCeremonyStatus('');
+        const { share1, share2, share3 } = shares;
+
+        if (!share1 || !share2 || !share3) {
+            setCeremonyStatus('Error: All 3 key shares are required.');
+            return;
+        }
+
+        try {
+            const combinedHex = secrets.combine([share1, share2, share3]);
+            const combinedString = secrets.hex2str(combinedHex);
+
+            const keyData = JSON.parse(combinedString);
+
+            if (!keyData.lambda || !keyData.mu || !keyData.publicKey) {
+                throw new Error("Invalid key structure");
+            }
+
+            const publicKey = new paillier.PublicKey(BigInt(keyData.publicKey.n), BigInt(keyData.publicKey.g));
+            const privKey = new paillier.PrivateKey(
+                BigInt(keyData.lambda),
+                BigInt(keyData.mu),
+                publicKey,
+                BigInt(keyData.p),
+                BigInt(keyData.q)
+            );
+
+            setPrivateKey(privKey);
+            setCeremonyStatus('Success: Private Key Reconstructed Validate ✓');
+        } catch (err) {
+            console.error(err);
+            setCeremonyStatus('Error: Invalid Key Shares. Decryption failed.');
+            setPrivateKey(null);
+        }
+    };
+
     const fetchAndTally = async () => {
+        if (!privateKey) {
+            setStatus("Please complete the Decryption Ceremony first.");
+            return;
+        }
+
         setLoading(true);
         setStatus("Initializing secure decryption...");
         setProgress(0);
@@ -37,32 +88,13 @@ const Tally = () => {
             await fetchCandidateNames();
             setProgress(10);
 
-            // 1. Fetch Private Key
-            setStatus("Retrieving encryption keys...");
-            const keyResponse = await fetch(`${API_URL}/admin/election/private-key`);
-            if (!keyResponse.ok) throw new Error("Failed to fetch private key");
-            const keyData = await keyResponse.json();
-            setProgress(25);
-
-            // Reconstruct Private Key
-            const publicKey = new paillier.PublicKey(BigInt(keyData.publicKey.n), BigInt(keyData.publicKey.g));
-            const privKey = new paillier.PrivateKey(
-                BigInt(keyData.lambda),
-                BigInt(keyData.mu),
-                publicKey,
-                BigInt(keyData.p),
-                BigInt(keyData.q)
-            );
-            setPrivateKey(privKey);
-            setProgress(40);
-
-            // 2. Fetch All Encrypted Votes
+            // 1. Fetch All Encrypted Votes
             setStatus("Fetching encrypted votes...");
             const votesResponse = await fetch(`${API_URL}/admin/votes`);
             if (!votesResponse.ok) throw new Error("Failed to fetch votes");
             const votesData = await votesResponse.json();
             setVotes(votesData);
-            setProgress(60);
+            setProgress(30);
 
             // 3. Decrypt and Tally
             setStatus(`Decrypting ${votesData.length} votes...`);
@@ -109,6 +141,26 @@ const Tally = () => {
             setStatus("Error: " + error.message);
             setLoading(false);
             setProgress(0);
+        }
+    };
+
+    const archiveResults = async () => {
+        if (!window.confirm("Are you sure you want to permanently Archive these results? This will lock the tally into the historical records.")) return;
+        try {
+            const res = await fetch(`${API_URL}/admin/election/archive`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resultsJson: results, totalVotes: votes.length })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Results successfully archived in the database! You may now inform the Sys-Admin to start a New Election if needed.");
+            } else {
+                alert("Failed to archive: " + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error archiving results.");
         }
     };
 
@@ -224,92 +276,175 @@ const Tally = () => {
                 )}
             </div>
 
-            {/* Control Panel */}
-            <div style={styles.controlCard}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <div>
-                        <h3 style={{ margin: 0, color: '#000080', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <BarChart3 size={24} />
-                            Tallying Control Panel
-                        </h3>
-                        <p style={{ margin: '0.5rem 0 0', color: '#6C757D' }}>
-                            {status || "Ready to decrypt and count votes"}
-                        </p>
+            {/* Decryption Ceremony Panel */}
+            {!privateKey && (
+                <div style={{ ...styles.controlCard, borderLeft: '4px solid #DF2C14' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: '#DF2C14' }}>
+                        <ShieldAlert size={28} />
+                        <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Decryption Ceremony (Multi-Party Computation)</h3>
                     </div>
-                    {Object.keys(results).length > 0 && (
-                        <button
-                            onClick={exportResults}
-                            style={{
-                                background: '#F47920',
-                                color: 'white',
-                                padding: '0.75rem 1.5rem',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                fontWeight: 600
-                            }}
-                        >
-                            <Download size={18} />
-                            Export Results
-                        </button>
+                    <p style={{ color: '#6C757D', marginBottom: '2rem' }}>
+                        The election private key is split into 3 fragments. All 3 officials must provide their key shares to reconstruct the private key and authorize the tallying process.
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                        {['Official A', 'Official B', 'Official C'].map((official, idx) => (
+                            <div key={official} style={{ padding: '1.5rem', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#000080', fontWeight: 600 }}>
+                                    <KeyRound size={20} />
+                                    {official} Share
+                                </div>
+                                <input
+                                    type="password"
+                                    name={`share${idx + 1}`}
+                                    value={shares[`share${idx + 1}`]}
+                                    onChange={handleShareChange}
+                                    placeholder={`Enter ${official} Key Share...`}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        borderRadius: '6px',
+                                        border: '1px solid #ced4da',
+                                        fontFamily: 'monospace'
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {ceremonyStatus && (
+                        <div style={{
+                            padding: '1rem',
+                            borderRadius: '6px',
+                            marginBottom: '1.5rem',
+                            background: ceremonyStatus.startsWith('Error') ? '#ffeef0' : '#e6f4ea',
+                            color: ceremonyStatus.startsWith('Error') ? '#DF2C14' : '#138808',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            {ceremonyStatus.startsWith('Error') ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
+                            {ceremonyStatus}
+                        </div>
                     )}
+
+                    <button
+                        onClick={reconstructKey}
+                        style={{ ...styles.button, background: '#000080', boxShadow: '0 4px 12px rgba(0,0,128,0.3)' }}
+                    >
+                        <Lock size={20} />
+                        Authenticate & Reconstruct Key
+                    </button>
                 </div>
+            )}
 
-                <button onClick={fetchAndTally} disabled={loading} style={styles.button}>
-                    {loading ? (
-                        <>
-                            <AlertCircle size={20} className="spin" />
-                            Processing...
-                        </>
-                    ) : (
-                        <>
-                            <Unlock size={20} />
-                            Decrypt & Tally All Votes
-                        </>
-                    )}
-                </button>
-
-                {loading && (
-                    <div>
-                        <div style={styles.progressBar}>
-                            <div style={styles.progressFill} />
+            {/* Tallying Control Panel (Only shown if key is reconstructed) */}
+            {privateKey && (
+                <div style={styles.controlCard}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <div>
+                            <h3 style={{ margin: 0, color: '#000080', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <BarChart3 size={24} />
+                                Tallying Control Panel
+                            </h3>
+                            <p style={{ margin: '0.5rem 0 0', color: '#6C757D' }}>
+                                {status || "Ready to decrypt and count votes"}
+                            </p>
                         </div>
-                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: '#6C757D' }}>
-                            Progress: {Math.round(progress)}%
-                        </p>
+                        {Object.keys(results).length > 0 && (
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button
+                                    onClick={archiveResults}
+                                    style={{
+                                        background: '#000080',
+                                        color: 'white',
+                                        padding: '0.75rem 1.5rem',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    📥 Archive Results
+                                </button>
+                                <button
+                                    onClick={exportResults}
+                                    style={{
+                                        background: '#F47920',
+                                        color: 'white',
+                                        padding: '0.75rem 1.5rem',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    <Download size={18} />
+                                    Export Results
+                                </button>
+                            </div>
+                        )}
                     </div>
-                )}
 
-                {votes.length > 0 && (
-                    <div style={{
-                        marginTop: '1.5rem',
-                        padding: '1rem',
-                        background: '#f8f9fa',
-                        borderRadius: '8px',
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '1rem'
-                    }}>
+                    <button onClick={fetchAndTally} disabled={loading} style={styles.button}>
+                        {loading ? (
+                            <>
+                                <AlertCircle size={20} className="spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                <Unlock size={20} />
+                                Decrypt & Tally All Votes
+                            </>
+                        )}
+                    </button>
+
+                    {loading && (
                         <div>
-                            <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Total Votes</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#000080' }}>{votes.length}</div>
+                            <div style={styles.progressBar}>
+                                <div style={styles.progressFill} />
+                            </div>
+                            <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: '#6C757D' }}>
+                                Progress: {Math.round(progress)}%
+                            </p>
                         </div>
-                        <div>
-                            <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Constituencies</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#138808' }}>{Object.keys(results).length}</div>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Status</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#F47920' }}>
-                                {loading ? 'Processing' : Object.keys(results).length > 0 ? 'Complete' : 'Pending'}
+                    )}
+
+                    {votes.length > 0 && (
+                        <div style={{
+                            marginTop: '1.5rem',
+                            padding: '1rem',
+                            background: '#f8f9fa',
+                            borderRadius: '8px',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '1rem'
+                        }}>
+                            <div>
+                                <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Total Votes</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#000080' }}>{votes.length}</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Constituencies</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#138808' }}>{Object.keys(results).length}</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.85rem', color: '#6C757D' }}>Status</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#F47920' }}>
+                                    {loading ? 'Processing' : Object.keys(results).length > 0 ? 'Complete' : 'Pending'}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             {/* Results Display */}
             {Object.keys(results).length > 0 && (
