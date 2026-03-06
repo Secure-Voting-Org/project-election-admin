@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield, History } from 'lucide-react';
 import API_BASE from '../config/api';
@@ -41,9 +41,13 @@ const Dashboard = () => {
         try {
             // Log logout event before clearing session
             if (admin) {
+                const token = localStorage.getItem('admin_token');
                 await fetch(`${API_BASE}/api/admin/logout`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
                     body: JSON.stringify({
                         username: admin.username,
                         role: admin.role

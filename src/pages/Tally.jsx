@@ -3,7 +3,9 @@ import * as paillier from 'paillier-bigint';
 import secrets from 'secrets.js-grempe';
 import { Lock, Unlock, BarChart3, Trophy, TrendingUp, CheckCircle, AlertCircle, Download, KeyRound, ShieldAlert } from 'lucide-react';
 
-const API_URL = "/api";
+import API_BASE from '../config/api';
+
+const API_URL = `${API_BASE}/api`;
 
 const Tally = () => {
     const [votes, setVotes] = useState([]);
@@ -90,7 +92,12 @@ const Tally = () => {
 
             // 1. Fetch All Encrypted Votes
             setStatus("Fetching encrypted votes...");
-            const votesResponse = await fetch(`${API_URL}/admin/votes`);
+            const token = localStorage.getItem('admin_token');
+            const votesResponse = await fetch(`${API_URL}/admin/votes`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             if (!votesResponse.ok) throw new Error("Failed to fetch votes");
             const votesData = await votesResponse.json();
             setVotes(votesData);

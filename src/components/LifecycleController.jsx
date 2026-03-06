@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import API_BASE from '../config/api';
 
 const LifecycleController = () => {
     const [status, setStatus] = useState(null);
@@ -11,7 +12,7 @@ const LifecycleController = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+            const res = await fetch(`${API_BASE}/api/election/status`);
             const data = await res.json();
             setStatus(data);
         } catch (err) {
@@ -23,9 +24,13 @@ const LifecycleController = () => {
         if (!window.confirm(`Are you sure you want to switch to ${newPhase} phase?`)) return;
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            const token = localStorage.getItem('admin_token');
+            await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ phase: newPhase })
             });
             fetchStatus();
@@ -45,9 +50,13 @@ const LifecycleController = () => {
 
         setLoading(true);
         try {
-            await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            const token = localStorage.getItem('admin_token');
+            await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ isKillSwitch: !status.is_kill_switch_active })
             });
             fetchStatus();

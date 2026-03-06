@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE from '../config/api';
 import { FileText, TrendingUp, Award, Download, CheckCircle, BarChart3, Trophy, Users, PieChart, Star, Sparkles, Medal } from 'lucide-react';
 
 const FinalReports = () => {
@@ -19,7 +20,7 @@ const FinalReports = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`${API_BASE}/api/constituencies`);
             const data = await res.json();
             setConstituencies(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -30,7 +31,12 @@ const FinalReports = () => {
 
     const fetchSummary = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/results/summary`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/results/summary`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             if (!data.error) {
                 setSummary(data);
@@ -42,7 +48,12 @@ const FinalReports = () => {
 
     const fetchTurnout = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/results/turnout`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/results/turnout`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             if (!data.error) {
                 setTurnout(data);
@@ -55,7 +66,12 @@ const FinalReports = () => {
     const fetchConstituencyResults = async (id) => {
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/results/constituency/${id}`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/results/constituency/${id}`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setConstituencyResults(data);
             setSelectedConstituency(id);
@@ -69,7 +85,12 @@ const FinalReports = () => {
     const generateForm20 = async (id) => {
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/results/form20/${id}`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/results/form20/${id}`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setForm20(data);
             setActiveView('form20');
@@ -85,13 +106,17 @@ const FinalReports = () => {
 
         setLoading(true);
         try {
-            const admin = JSON.parse(localStorage.getItem('admin_token'));
-            const res = await fetch(`http://${window.location.hostname}:5000/api/results/declare/${constituencyId}`, {
+            const token = localStorage.getItem('admin_token');
+            const user = JSON.parse(localStorage.getItem('admin_user'));
+            const res = await fetch(`${API_BASE}/api/results/declare/${constituencyId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({
-                    adminUsername: admin.username,
-                    adminRole: admin.role
+                    adminUsername: user?.username,
+                    adminRole: user?.role
                 })
             });
             const data = await res.json();

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as faceapi from 'face-api.js';
 import { Camera, UserPlus, Save, RefreshCw, Wifi } from 'lucide-react';
 import { useNFC } from '../hooks/useNFC';
+import API_BASE from '../config/api';
 
 const VoterRegistration = () => {
     const [constituencies, setConstituencies] = useState([]);
@@ -66,7 +67,7 @@ const VoterRegistration = () => {
 
     const fetchConstituencies = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/constituencies`);
+            const res = await fetch(`${API_BASE}/api/constituencies`);
             const data = await res.json();
             setConstituencies(data);
         } catch (err) {
@@ -141,10 +142,14 @@ const VoterRegistration = () => {
 
         setLoading(true);
         try {
+            const token = localStorage.getItem('admin_token');
             const payload = { ...formData, faceDescriptor };
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/voter/register-direct`, {
+            const res = await fetch(`${API_BASE}/api/admin/voter/register-direct`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify(payload)
             });
 

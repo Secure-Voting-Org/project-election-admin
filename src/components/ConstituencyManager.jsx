@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, MapPin, Trash2, Search } from 'lucide-react';
 import API_BASE from '../config/api';
 
@@ -26,9 +26,13 @@ const ConstituencyManager = () => {
         e.preventDefault();
         setLoading(true);
         try {
+            const token = localStorage.getItem('admin_token');
             const res = await fetch(`${API_BASE}/api/constituency`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify(formData)
             });
             if (res.ok) {
@@ -45,8 +49,12 @@ const ConstituencyManager = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this constituency?")) return;
         try {
-            const res = await fetch(`/api/constituency/${id}`, {
-                method: 'DELETE'
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/constituency/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
             });
             if (res.ok) {
                 fetchConstituencies();

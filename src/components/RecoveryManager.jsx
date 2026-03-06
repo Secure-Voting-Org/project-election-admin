@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle, Clock, Hash, User, Shield, Calendar, XCircle, AlertCircle, Loader2, ChevronDown, ChevronUp, History } from 'lucide-react';
+import API_BASE from '../config/api';
 
 export default function RecoveryManager({ admin }) {
     const [requests, setRequests] = useState([]);
@@ -11,7 +12,12 @@ export default function RecoveryManager({ admin }) {
     const fetchRequests = async (showSpinner = true) => {
         if (showSpinner) setRefreshing(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/recovery/pending`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/recovery/pending`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             if (Array.isArray(data)) {
                 // Sort by ID descending (newest first)
@@ -41,9 +47,13 @@ export default function RecoveryManager({ admin }) {
         if (!window.confirm(`Approve Recovery Request #${requestId}?`)) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/recovery/approve`, {
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/recovery/approve`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ requestId, adminId: admin?.id || admin?.username || 'ADMIN' })
             });
             const data = await res.json();

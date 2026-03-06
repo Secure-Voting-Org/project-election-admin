@@ -6,7 +6,9 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_URL = '/api';
+import API_BASE from '../config/api';
+
+const API_URL = `${API_BASE}/api`;
 
 const PHASES = ['PRE_POLL', 'LIVE', 'POST_POLL'];
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as faceapi from 'face-api.js';
 import { Camera, Search, UserCheck, AlertTriangle } from 'lucide-react';
+import API_BASE from '../config/api';
 
 const VoterVerification = () => {
     const [voterId, setVoterId] = useState('');
@@ -44,7 +45,12 @@ const VoterVerification = () => {
             // Let's assume we'll add GET /api/voter/:id or use a generic search
 
             // Temporary: Use a direct DB call via a new route we need to create
-            const res = await fetch(`/api/voter/${voterId}`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/voter/${voterId}`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
 
             if (res.ok) {

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Loader, CreditCard } from 'lucide-react';
 import API_BASE from '../config/api';
 
@@ -27,7 +27,12 @@ const PendingVerifications = () => {
 
     const fetchPending = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/admin/pending-voters`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/pending-voters`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setApplications(data);
         } catch (err) {
@@ -39,7 +44,12 @@ const PendingVerifications = () => {
 
     const fetchAccepted = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/admin/approved-voters`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/approved-voters`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setAcceptedApps(data);
         } catch (err) {
@@ -49,7 +59,12 @@ const PendingVerifications = () => {
 
     const fetchRejected = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/admin/rejected-voters`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/rejected-voters`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setRejectedApps(data);
         } catch (err) {
@@ -60,9 +75,13 @@ const PendingVerifications = () => {
     const handleApprove = async (appId) => {
         if (!window.confirm("Approve this voter application?")) return;
         try {
+            const token = localStorage.getItem('admin_token');
             const res = await fetch(`${API_BASE}/api/admin/approve-voter`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ applicationId: appId })
             });
             if (res.ok) {
@@ -84,9 +103,13 @@ const PendingVerifications = () => {
         if (!window.confirm("Are you sure you want to reject this application?")) return;
 
         try {
+            const token = localStorage.getItem('admin_token');
             const res = await fetch(`${API_BASE}/api/admin/reject-voter`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ applicationId: appId, reason })
             });
             if (res.ok) {
@@ -137,9 +160,13 @@ const PendingVerifications = () => {
         if (!nfcTagId.trim()) return;
 
         try {
+            const token = localStorage.getItem('admin_token');
             const res = await fetch(`${API_BASE}/api/admin/assign-nfc`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({
                     currentVoterId: currentVoterForNfc.voter_id || currentVoterForNfc.id, // Handle different field names if any
                     nfcTagId: nfcTagId.trim()
@@ -217,7 +244,12 @@ const PendingVerifications = () => {
     const handleViewDetails = async (appId) => {
         try {
             // Fetch full details including images
-            const res = await fetch(`/api/admin/pending-voter/${appId}`);
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_BASE}/api/admin/pending-voter/${appId}`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             if (!res.ok) throw new Error("Failed to fetch details");
             const data = await res.json();
             setSelectedApp(data);
