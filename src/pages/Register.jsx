@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, MapPin, Activity, FileText, Eye, EyeOff, Lock } from 'lucide-react';
 import API_BASE from '../config/api';
