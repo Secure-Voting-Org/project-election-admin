@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Edit2, Trash2, Lock, X, Users, Award, MapPin } from 'lucide-react';
+import { UserPlus, Edit2, Trash2, Lock, X, Users, Award, MapPin, Filter } from 'lucide-react';
 import API_BASE from '../config/api';
+import { candidatesData } from '../data/candidatesData';
 
 const CandidateMaster = () => {
     const [constituencies, setConstituencies] = useState([]);
     const [candidates, setCandidates] = useState([]);
+
+    // Filters
+    const [selectedState, setSelectedState] = useState('All');
+    const [selectedDistrict, setSelectedDistrict] = useState('All');
+    const [selectedConstituency, setSelectedConstituency] = useState('All');
+
     const [formData, setFormData] = useState({
         name: '',
         party: '',
@@ -38,21 +45,82 @@ const CandidateMaster = () => {
     const fetchConstituencies = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/constituencies`);
+            if (!res.ok) throw new Error("API failed");
             const data = await res.json();
-            setConstituencies(data);
+            if (data && data.length > 0) {
+                setConstituencies(data);
+                return;
+            }
         } catch (err) {
-            console.error('Failed to fetch constituencies', err);
+            console.error('Failed to fetch constituencies from API, falling back to static data', err);
         }
+        // Fallback to static data
+        const flatConstituencies = [];
+        let idCounter = 1;
+
+        for (const state in candidatesData) {
+            const stateData = candidatesData[state];
+            if (stateData && stateData.districts) {
+                for (const district in stateData.districts) {
+                    for (const constituency in stateData.districts[district]) {
+                        flatConstituencies.push({
+                            id: idCounter++,
+                            name: constituency,
+                            district: district
+                        });
+                    }
+                }
+            }
+        }
+        setConstituencies(flatConstituencies);
     };
 
     const fetchCandidates = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/candidates`);
+            if (!res.ok) throw new Error("API failed");
             const data = await res.json();
-            setCandidates(data);
+            if (data && data.length > 0) {
+                setCandidates(data);
+                return;
+            }
         } catch (err) {
-            console.error('Failed to fetch candidates', err);
+            console.error('Failed to fetch candidates from API, falling back to static data', err);
         }
+        // Fallback to static data
+        const flatCandidates = [];
+
+        for (const state in candidatesData) {
+            const stateData = candidatesData[state];
+            if (stateData && stateData.districts) {
+                for (const district in stateData.districts) {
+                    const constits = stateData.districts[district];
+                    for (const constituency in constits) {
+                        const cands = constits[constituency];
+                        cands.forEach((cand, idx) => {
+                            let symbol = '👤';
+                            if (cand.party === 'TDP') symbol = '🚲';
+                            else if (cand.party === 'YSRCP') symbol = '🪭';
+                            else if (cand.party === 'JSP') symbol = '🍵';
+                            else if (cand.party === 'BJP') symbol = '🪷';
+                            else if (cand.party === 'INC') symbol = '✋';
+                            else if (cand.party === 'NOTA') symbol = '❌';
+
+                            flatCandidates.push({
+                                id: `static-${state}-${district}-${constituency}-${idx}`,
+                                name: cand.name,
+                                party: cand.party,
+                                state: state,
+                                district: district,
+                                constituency: constituency,
+                                symbol: symbol,
+                            });
+                        });
+                    }
+                }
+            }
+        }
+        setCandidates(flatCandidates);
     };
 
     const handleSubmit = async (e) => {
@@ -139,8 +207,30 @@ const CandidateMaster = () => {
         setMessage(null);
     };
 
-    // Group candidates by District -> Constituency
-    const groupedCandidates = candidates.reduce((acc, candidate) => {
+    // Filter options
+    const availableStates = [...new Set(candidates.map(c => c.state || 'Unknown State'))].sort();
+
+    const availableDistricts = selectedState === 'All'
+        ? []
+        : [...new Set(candidates.filter(c => (c.state || 'Unknown State') === selectedState).map(c => c.district || 'Unknown District'))].sort();
+
+    const availableConstituencies = selectedDistrict === 'All'
+        ? []
+        : [...new Set(candidates.filter(c => (c.district || 'Unknown District') === selectedDistrict).map(c => c.constituency || 'Unknown Constituency'))].sort();
+
+    // Filter candidates based on selection
+    const filteredCandidates = candidates.filter(c => {
+        const cState = c.state || 'Unknown State';
+        const cDistrict = c.district || 'Unknown District';
+        const cConstituency = c.constituency || 'Unknown Constituency';
+        if (selectedState !== 'All' && cState !== selectedState) return false;
+        if (selectedDistrict !== 'All' && cDistrict !== selectedDistrict) return false;
+        if (selectedConstituency !== 'All' && cConstituency !== selectedConstituency) return false;
+        return true;
+    });
+
+    // Group filtered candidates by District -> Constituency
+    const groupedCandidates = filteredCandidates.reduce((acc, candidate) => {
         const district = candidate.district || 'Unknown District';
         const constituency = candidate.constituency || 'Unknown Constituency';
         if (!acc[district]) acc[district] = {};
@@ -414,18 +504,68 @@ const CandidateMaster = () => {
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                 padding: '2rem'
             }}>
-                <h4 style={{ color: '#000080', fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.1rem' }}>
-                    📋 Registered Candidates Overview
-                </h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <h4 style={{ color: '#000080', fontWeight: 800, margin: 0, fontSize: '1.1rem' }}>
+                        📋 Registered Candidates Overview
+                    </h4>
 
-                {Object.keys(groupedCandidates).length === 0 ? (
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Filter size={16} color="#666" />
+                        <select
+                            value={selectedState}
+                            onChange={(e) => {
+                                setSelectedState(e.target.value);
+                                setSelectedDistrict('All');
+                                setSelectedConstituency('All');
+                            }}
+                            style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="All">All States</option>
+                            {availableStates.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+
+                        <select
+                            value={selectedDistrict}
+                            onChange={(e) => {
+                                setSelectedDistrict(e.target.value);
+                                setSelectedConstituency('All');
+                            }}
+                            style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="All">All Districts</option>
+                            {availableDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+
+                        <select
+                            value={selectedConstituency}
+                            onChange={(e) => setSelectedConstituency(e.target.value)}
+                            style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="All">All Constituencies</option>
+                            {availableConstituencies.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                </div>
+
+                {selectedState === 'All' ? (
+                    <div style={{
+                        textAlign: 'center', padding: '3rem',
+                        background: '#FAFAFA', borderRadius: '10px',
+                        border: '2px dashed #ddd'
+                    }}>
+                        <Filter size={40} color="#ccc" />
+                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500, fontSize: '1.05rem' }}>
+                            Please select at least a State to view candidates.
+                        </p>
+                    </div>
+                ) : Object.keys(groupedCandidates).length === 0 ? (
                     <div style={{
                         textAlign: 'center', padding: '3rem',
                         background: '#FAFAFA', borderRadius: '10px',
                         border: '2px dashed #ddd'
                     }}>
                         <Users size={40} color="#ccc" />
-                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500 }}>No candidates registered yet.</p>
+                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500 }}>No candidates registered in this constituency.</p>
                     </div>
                 ) : (
                     Object.entries(groupedCandidates).map(([district, districtConstituencies]) => (
