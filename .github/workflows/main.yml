@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_ELECTION_ADMIN }}
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js
@@ -21,6 +24,9 @@ jobs:
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_ELECTION_ADMIN }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Vercel CLI
@@ -43,6 +49,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_ELECTION_ADMIN }}
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js
@@ -56,9 +65,13 @@ jobs:
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_ELECTION_ADMIN }}
     steps:
       - name: Deploy to Render
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           curl "$deploy_url"
+
