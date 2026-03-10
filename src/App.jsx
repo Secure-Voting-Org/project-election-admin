@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Tally from './pages/Tally';
+import SupportInbox from './pages/SupportInbox';
 
 const PrivateRoute = ({ children }) => {
   const isAdmin = localStorage.getItem('admin_token');
@@ -26,11 +27,19 @@ const App = () => {
             </PrivateRoute>
           }
         />
-        <Route
+          <Route
           path="/tally"
           element={
             <PrivateRoute>
               <Tally />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/support-inbox"
+          element={
+            <PrivateRoute>
+              <SupportInbox />
             </PrivateRoute>
           }
         />
