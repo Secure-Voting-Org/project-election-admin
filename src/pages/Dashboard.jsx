@@ -67,12 +67,44 @@ const Dashboard = () => {
     return (
         <div className="admin-layout">
             <aside className="sidebar">
-                <div className="sidebar-header">
-                    <img src="/assets/images/logo.png" style={{ height: '32px' }} alt="Logo" onError={(e) => e.target.style.display = 'none'} />
-                    <div>
-                        <div style={{ fontWeight: 700 }}>Admin Console</div>
-                        <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{admin.role.replace('_', ' ')}</div>
+                {/* Thin tricolor stripe at very top of sidebar */}
+                <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
+                    background: 'linear-gradient(90deg, #FF8C00 0% 33.33%, #ffffff 33.33% 66.66%, #138808 66.66% 100%)',
+                    zIndex: 10
+                }} />
+
+                <div className="sidebar-header" style={{ paddingTop: '2rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.85rem' }}>
+                    {/* Avatar Box */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                        <div style={{
+                            width: '46px', height: '46px', borderRadius: '12px',
+                            background: 'linear-gradient(135deg, #FF8C00 0%, #e06500 50%, #138808 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
+                        }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" fill="white" fillOpacity="0.9"/>
+                                <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 900, fontSize: '1rem', letterSpacing: '0.2px', lineHeight: 1.2 }}>Admin Console</div>
+                            <div style={{
+                                fontSize: '0.72rem',
+                                background: 'linear-gradient(90deg, #FF8C00, #138808)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase'
+                            }}>{admin.role.replace('_', ' ')}</div>
+                        </div>
                     </div>
+                    {/* Thin tricolor stripe under header */}
+                    <div style={{
+                        width: '100%', height: '3px', borderRadius: '2px',
+                        background: 'linear-gradient(90deg, #FF8C00 0% 33.33%, rgba(255,255,255,0.5) 33.33% 66.66%, #138808 66.66% 100%)'
+                    }} />
                 </div>
 
                 <nav>
@@ -126,26 +158,54 @@ const Dashboard = () => {
 
                 </nav>
 
-                <div style={{ marginTop: 'auto' }}>
-                    <div className="nav-item" onClick={handleLogout} style={{ color: '#ff8a80' }}>
-                        <LogOut size={20} /> Logout
+                <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="nav-item" onClick={handleLogout} style={{
+                        color: 'rgba(255, 138, 128, 0.9)',
+                        border: '1px solid rgba(255, 138, 128, 0.2)',
+                        borderRadius: '10px',
+                        transition: 'all 0.25s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,138,128,0.12)';
+                        e.currentTarget.style.color = '#ff8a80';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'rgba(255,138,128,0.9)';
+                    }}>
+                        <LogOut size={18} /> Logout
                     </div>
                 </div>
             </aside>
 
             <main className="dashboard-main">
-                <div className="top-bar" style={{ borderBottom: '2px solid #ddd', paddingBottom: '1rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ margin: 0, color: '#000080', fontWeight: 800, letterSpacing: '-0.02em' }}>
-                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Manager
+                <div className="top-bar">
+                    <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.03em', fontSize: '1.5rem' }}>
+                        <span style={{
+                            background: 'linear-gradient(135deg, #000080 0%, #1565C0 50%, #138808 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                        }}>
+                            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Manager
+                        </span>
                     </h2>
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
                         {/* Status Indicator */}
                         <ElectionStatusBadge />
 
-                        <div className="user-profile" style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className="user-profile" style={{
+                            background: 'linear-gradient(135deg, #f4f7ff 0%, #eef2ff 100%)',
+                            padding: '0.55rem 1.1rem',
+                            borderRadius: '12px',
+                            boxShadow: '0 2px 10px rgba(0,0,128,0.10)',
+                            display: 'flex', alignItems: 'center', gap: '0.6rem',
+                            border: '1px solid rgba(0,0,128,0.10)',
+                            borderLeft: '3px solid #000080'
+                        }}>
                             <Shield size={16} color="#000080" />
-                            <span>Officer: <strong style={{ color: '#000080' }}>{admin.name}</strong></span>
+                            <span style={{ fontSize: '0.92rem', color: '#444' }}>Officer: <strong style={{ color: '#000080', fontWeight: 800 }}>{admin.name}</strong></span>
                         </div>
                     </div>
                 </div>
