@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE from '../config/api';
+import { locationData } from '../data/locationData';
 import { FileText, TrendingUp, Award, Download, CheckCircle, BarChart3, Trophy, Users, PieChart, Star, Sparkles, Medal } from 'lucide-react';
 
 const FinalReports = () => {
@@ -11,6 +12,28 @@ const FinalReports = () => {
     const [form20, setForm20] = useState(null);
     const [loading, setLoading] = useState(false);
     const [activeView, setActiveView] = useState('summary');
+
+    // New state for filtering
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+
+    // Derived lists for dropdowns
+    const availableStates = Object.keys(locationData).sort();
+    const availableDistricts = selectedState && locationData[selectedState]?.districts
+        ? Object.keys(locationData[selectedState].districts).sort()
+        : [];
+
+    let filteredConstituencies = [];
+    if (selectedState && selectedDistrict && locationData[selectedState]?.districts[selectedDistrict]) {
+        filteredConstituencies = locationData[selectedState].districts[selectedDistrict].map(locC => {
+            const dbC = constituencies.find(c => c.name === locC.name);
+            return dbC || { id: `untracked-${locC.name}`, name: locC.name, district: selectedDistrict, state: selectedState };
+        });
+    } else if (selectedState) {
+        filteredConstituencies = constituencies.filter(c => c.state === selectedState);
+    } else {
+        filteredConstituencies = constituencies;
+    }
 
     useEffect(() => {
         fetchConstituencies();
@@ -498,33 +521,81 @@ const FinalReports = () => {
                         }}>
                             Select Constituency
                         </h4>
+
+                        <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <select
+                                value={selectedState}
+                                onChange={(e) => {
+                                    setSelectedState(e.target.value);
+                                    setSelectedDistrict(''); // Reset district when state changes
+                                }}
+                                style={{
+                                    padding: '0.75rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    fontSize: '1rem',
+                                    outline: 'none'
+                                }}
+                            >
+                                <option value="">All States</option>
+                                {availableStates.map(state => (
+                                    <option key={state} value={state}>{state}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={selectedDistrict}
+                                onChange={(e) => setSelectedDistrict(e.target.value)}
+                                disabled={!selectedState}
+                                style={{
+                                    padding: '0.75rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    fontSize: '1rem',
+                                    outline: 'none',
+                                    opacity: !selectedState ? 0.6 : 1
+                                }}
+                            >
+                                <option value="">All Districts</option>
+                                {availableDistricts.map(district => (
+                                    <option key={district} value={district}>{district}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div style={{ flex: 1, overflowY: 'auto', marginRight: '-0.5rem', paddingRight: '0.5rem' }}>
-                            {constituencies.map((c) => (
-                                <div
-                                    key={c.id}
-                                    onClick={() => fetchConstituencyResults(c.id)}
-                                    style={{
-                                        padding: '1.25rem',
-                                        cursor: 'pointer',
-                                        background: selectedConstituency === c.id
-                                            ? '#138808'
-                                            : 'white',
-                                        color: selectedConstituency === c.id ? 'white' : '#212529',
-                                        borderRadius: '12px',
-                                        marginBottom: '0.75rem',
-                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        borderLeft: selectedConstituency === c.id ? '5px solid #F47920' : '5px solid transparent',
-                                        boxShadow: selectedConstituency === c.id
-                                            ? '0 6px 20px rgba(19,136,8,0.4)'
-                                            : '0 2px 8px rgba(0,0,0,0.05)',
-                                        transform: selectedConstituency === c.id ? 'translateX(4px)' : 'none'
-                                    }}
-                                    className="constituency-item"
-                                >
-                                    <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.25rem' }}>{c.name}</div>
-                                    <div style={{ fontSize: '0.9rem', opacity: 0.85 }}>{c.district}</div>
+                            {filteredConstituencies.length === 0 ? (
+                                <div style={{ padding: '1rem', textAlign: 'center', color: '#6C757D' }}>
+                                    No constituencies found for the selected criteria.
                                 </div>
-                            ))}
+                            ) : (
+                                filteredConstituencies.map((c) => (
+                                    <div
+                                        key={c.id}
+                                        onClick={() => fetchConstituencyResults(c.id)}
+                                        style={{
+                                            padding: '1.25rem',
+                                            cursor: 'pointer',
+                                            background: selectedConstituency === c.id
+                                                ? '#138808'
+                                                : 'white',
+                                            color: selectedConstituency === c.id ? 'white' : '#212529',
+                                            borderRadius: '12px',
+                                            marginBottom: '0.75rem',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            borderLeft: selectedConstituency === c.id ? '5px solid #F47920' : '5px solid transparent',
+                                            boxShadow: selectedConstituency === c.id
+                                                ? '0 6px 20px rgba(19,136,8,0.4)'
+                                                : '0 2px 8px rgba(0,0,0,0.05)',
+                                            transform: selectedConstituency === c.id ? 'translateX(4px)' : 'none'
+                                        }}
+                                        className="constituency-item"
+                                    >
+                                        <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.25rem' }}>{c.name}</div>
+                                        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>{c.state ? `${c.state} - ` : ''}{c.district}</div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 
