@@ -547,25 +547,14 @@ const CandidateMaster = () => {
                     </div>
                 </div>
 
-                {selectedState === 'All' ? (
-                    <div style={{
-                        textAlign: 'center', padding: '3rem',
-                        background: '#FAFAFA', borderRadius: '10px',
-                        border: '2px dashed #ddd'
-                    }}>
-                        <Filter size={40} color="#ccc" />
-                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500, fontSize: '1.05rem' }}>
-                            Please select at least a State to view candidates.
-                        </p>
-                    </div>
-                ) : Object.keys(groupedCandidates).length === 0 ? (
+                {Object.keys(groupedCandidates).length === 0 ? (
                     <div style={{
                         textAlign: 'center', padding: '3rem',
                         background: '#FAFAFA', borderRadius: '10px',
                         border: '2px dashed #ddd'
                     }}>
                         <Users size={40} color="#ccc" />
-                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500 }}>No candidates registered in this constituency.</p>
+                        <p style={{ color: '#999', marginTop: '0.75rem', fontWeight: 500 }}>No candidates found. Use the filters above to refine, or add a new candidate.</p>
                     </div>
                 ) : (
                     Object.entries(groupedCandidates).map(([district, districtConstituencies]) => (
