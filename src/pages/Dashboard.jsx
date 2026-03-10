@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield, History } from 'lucide-react';
+import { LogOut, Map, UserPlus, PlayCircle, StopCircle, UserCheck, Shield } from 'lucide-react';
 import API_BASE from '../config/api';
 
 import ConstituencyManager from '../components/ConstituencyManager';
@@ -11,7 +11,6 @@ import VoterVerification from '../components/VoterVerification';
 import PendingVerifications from '../components/PendingVerifications';
 import RecoveryManager from '../components/RecoveryManager';
 import FinalReports from '../components/FinalReports';
-import ElectionHistory from '../components/ElectionHistory';
 
 
 
@@ -117,9 +116,6 @@ const Dashboard = () => {
                             <div className={`nav-item ${activeTab === 'tally' ? 'active' : ''}`} onClick={() => setActiveTab('tally')}>
                                 <Shield size={20} /> Tally Votes
                             </div>
-                            <div className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-                                <History size={20} /> Election Archives
-                            </div>
                         </>
                     )}
 
@@ -165,7 +161,6 @@ const Dashboard = () => {
 
                     {activeTab === 'reports' && <FinalReports />}
                     {activeTab === 'tally' && <Tally />}
-                    {activeTab === 'history' && <ElectionHistory />}
 
                 </div>
             </main>

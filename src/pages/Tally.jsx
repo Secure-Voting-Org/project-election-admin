@@ -12,6 +12,7 @@ const Tally = () => {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState({});
     const [status, setStatus] = useState("");
+    const [isPublished, setIsPublished] = useState(false);
     const [privateKey, setPrivateKey] = useState(null);
     const [progress, setProgress] = useState(0);
     const [candidateNames, setCandidateNames] = useState({});
@@ -19,6 +20,17 @@ const Tally = () => {
     // Ceremony State
     const [shares, setShares] = useState({ share1: '', share2: '', share3: '' });
     const [ceremonyStatus, setCeremonyStatus] = useState('');
+
+    React.useEffect(() => {
+        fetch(`${API_URL}/election/status`)
+            .then(res => res.json())
+            .then(data => {
+                if(data && data.results_published !== undefined) {
+                    setIsPublished(data.results_published);
+                }
+            })
+            .catch(err => console.error("Failed to fetch initial publish status", err));
+    }, []);
 
     const fetchCandidateNames = async () => {
         try {
@@ -29,8 +41,10 @@ const Tally = () => {
                 nameMap[c.id] = { name: c.name, party: c.party, constituency: c.constituency };
             });
             setCandidateNames(nameMap);
+            return nameMap;
         } catch (err) {
             console.error('Failed to fetch candidate names', err);
+            return {};
         }
     };
 
@@ -86,8 +100,8 @@ const Tally = () => {
         setProgress(0);
 
         try {
-            // Fetch candidate names first
-            await fetchCandidateNames();
+            // Fetch candidate names first and get the map
+            const nameMap = await fetchCandidateNames();
             setProgress(10);
 
             // 1. Fetch All Encrypted Votes
@@ -107,6 +121,7 @@ const Tally = () => {
             setStatus(`Decrypting ${votesData.length} votes...`);
 
             const tally = {};
+            const partyTotals = {};
 
             setTimeout(async () => {
                 const startTime = performance.now();
@@ -114,16 +129,29 @@ const Tally = () => {
                 for (let i = 0; i < votesData.length; i++) {
                     const vote = votesData[i];
                     try {
-                        const encryptedVal = BigInt(vote.candidate_id);
-                        const decryptedVal = privKey.decrypt(encryptedVal);
-                        const candidateId = decryptedVal.toString();
-                        const constituency = vote.constituency || "Unknown Constituency";
+                        const encryptedMap = JSON.parse(vote.candidate_id);
+                        
+                        for (const [candidateId, encryptedStr] of Object.entries(encryptedMap)) {
+                            const encryptedVal = BigInt(encryptedStr);
+                            const decryptedVal = privateKey.decrypt(encryptedVal);
+                            
+                            // If this candidate received the vote (1)
+                            if (Number(decryptedVal) === 1) {
+                                // Extract party and constituency from our pre-fetched name map
+                                const candidateInfo = nameMap[candidateId] || { party: 'Independent', constituency: 'General' };
+                                const constituency = candidateInfo.constituency || 'General';
+                                const party = candidateInfo.party || 'Independent';
 
-                        if (!tally[constituency]) {
-                            tally[constituency] = {};
+                                // Constituency Tally
+                                if (!tally[constituency]) {
+                                    tally[constituency] = {};
+                                }
+                                tally[constituency][candidateId] = (tally[constituency][candidateId] || 0) + 1;
+
+                                // Party Tally for the backend
+                                partyTotals[party] = (partyTotals[party] || 0) + 1;
+                            }
                         }
-
-                        tally[constituency][candidateId] = (tally[constituency][candidateId] || 0) + 1;
 
                         // Update progress
                         if (i % 10 === 0) {
@@ -132,6 +160,27 @@ const Tally = () => {
                     } catch (e) {
                         console.error("Decryption failed for a vote:", e);
                     }
+                }
+
+                // Prepare and Save Party Results
+                const totalValidVotes = Object.values(partyTotals).reduce((sum, count) => sum + count, 0);
+                const partyResultsArray = Object.entries(partyTotals).map(([party, count]) => ({
+                    party,
+                    vote_count: count,
+                    vote_share: totalValidVotes > 0 ? ((count / totalValidVotes) * 100).toFixed(2) : '0.00'
+                }));
+
+                try {
+                    await fetch(`${API_URL}/results/tally`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token ? `Bearer ${token}` : ''
+                        },
+                        body: JSON.stringify({ partyResults: partyResultsArray })
+                    });
+                } catch (saveErr) {
+                    console.error("Failed to save tally results to database:", saveErr);
                 }
 
                 const endTime = performance.now();
@@ -168,6 +217,39 @@ const Tally = () => {
         } catch (err) {
             console.error(err);
             alert("Error archiving results.");
+        }
+    };
+
+    const handlePublishResults = async () => {
+        const confirmMsg = isPublished 
+            ? "Are you sure you want to UNPUBLISH the results? Observers will no longer see them."
+            : "Are you sure you want to PUBLISH these results to all Observers?";
+        
+        if (!window.confirm(confirmMsg)) return;
+        
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('admin_token');
+            const res = await fetch(`${API_URL}/admin/election/publish-results`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: JSON.stringify({ isPublished: !isPublished })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setIsPublished(data.isPublished);
+                alert(`Results have been ${data.isPublished ? 'PUBLISHED' : 'UNPUBLISHED'} successfully.`);
+            } else {
+                alert("Failed to change publish status: " + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error changing publish status.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -358,45 +440,6 @@ const Tally = () => {
                                 {status || "Ready to decrypt and count votes"}
                             </p>
                         </div>
-                        {Object.keys(results).length > 0 && (
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button
-                                    onClick={archiveResults}
-                                    style={{
-                                        background: '#000080',
-                                        color: 'white',
-                                        padding: '0.75rem 1.5rem',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    📥 Archive Results
-                                </button>
-                                <button
-                                    onClick={exportResults}
-                                    style={{
-                                        background: '#F47920',
-                                        color: 'white',
-                                        padding: '0.75rem 1.5rem',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    <Download size={18} />
-                                    Export Results
-                                </button>
-                            </div>
-                        )}
                     </div>
 
                     <button onClick={fetchAndTally} disabled={loading} style={styles.button}>
@@ -553,6 +596,98 @@ const Tally = () => {
                             </div>
                         );
                     })}
+
+                    {/* Constituency Winners Summary Panel */}
+                    <div style={{
+                        background: 'white', borderRadius: '12px', padding: '1.5rem',
+                        marginTop: '2rem', boxShadow: '0 4px 20px rgba(0,0,128,0.12)',
+                        border: '2px solid #000080'
+                    }}>
+                        <h3 style={{ margin: '0 0 1.5rem', color: '#000080', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.5rem', fontWeight: 800 }}>
+                            🏆 Constituency-wise Winners Summary
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                            {Object.entries(results).map(([constituency, candidates]) => {
+                                const [winnerId, winnerVotes] = getWinner(candidates);
+                                const totalVotes = getTotalVotes(candidates);
+                                const winner = candidateNames[winnerId] || { name: `Candidate #${winnerId}`, party: 'Unknown' };
+                                const percentage = ((winnerVotes / totalVotes) * 100).toFixed(1);
+                                return (
+                                    <div key={constituency} style={{
+                                        background: 'linear-gradient(135deg, #f0fff4 0%, #ffffff 100%)',
+                                        border: '1px solid #c8e6c9', borderLeft: '5px solid #138808',
+                                        borderRadius: '10px', padding: '1.25rem',
+                                        boxShadow: '0 2px 8px rgba(19,136,8,0.08)'
+                                    }}>
+                                        <div style={{ fontSize: '0.8rem', color: '#6C757D', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            📍 {constituency}
+                                        </div>
+                                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#212529', marginBottom: '0.25rem' }}>
+                                            🥇 {winner.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: '#6C757D', marginBottom: '0.5rem' }}>
+                                            {winner.party}
+                                        </div>
+                                        <div style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                                            background: '#138808', color: 'white', padding: '0.25rem 0.75rem',
+                                            borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700
+                                        }}>
+                                            {winnerVotes.toLocaleString()} votes ({percentage}%)
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Admin Action Buttons */}
+                    <div style={{
+                        marginTop: '2rem',
+                        display: 'flex',
+                        gap: '1rem',
+                        justifyContent: 'flex-end',
+                        flexWrap: 'wrap'
+                    }}>
+                        <button
+                            onClick={exportResults}
+                            style={{ ...styles.button, background: '#4A5568' }}
+                        >
+                            <Download size={20} style={{ marginRight: '0.5rem' }} />
+                            Export JSON
+                        </button>
+                        
+                        <button
+                            onClick={handlePublishResults}
+                            disabled={loading}
+                            style={{ 
+                                ...styles.button, 
+                                background: isPublished ? '#E53E3E' : '#3182CE',
+                                opacity: loading ? 0.7 : 1
+                            }}
+                        >
+                            {isPublished ? (
+                                <>
+                                    <ShieldAlert size={20} style={{ marginRight: '0.5rem' }} />
+                                    Unpublish Results
+                                </>
+                            ) : (
+                                <>
+                                    <TrendingUp size={20} style={{ marginRight: '0.5rem' }} />
+                                    Publish Results to Observers
+                                </>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={archiveResults}
+                            disabled={loading}
+                            style={{ ...styles.button, background: '#000080' }}
+                        >
+                            <Trophy size={20} style={{ marginRight: '0.5rem' }} />
+                            Archive Results
+                        </button>
+                    </div>
                 </div>
             )}
 
