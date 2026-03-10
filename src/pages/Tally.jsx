@@ -177,7 +177,10 @@ const Tally = () => {
                             'Content-Type': 'application/json',
                             'Authorization': token ? `Bearer ${token}` : ''
                         },
-                        body: JSON.stringify({ partyResults: partyResultsArray })
+                        body: JSON.stringify({ 
+                            partyResults: partyResultsArray,
+                            constituencyResults: tally // Send the constituency breakdown too
+                        })
                     });
                 } catch (saveErr) {
                     console.error("Failed to save tally results to database:", saveErr);
